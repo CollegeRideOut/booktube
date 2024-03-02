@@ -1,0 +1,101 @@
+---
+import LayoutClient from "../../layouts/LayoutClient.astro";
+---
+
+<LayoutClient title="Book Info">
+  <div>
+    <div>
+      <img id="bookImage" />
+
+      <div>
+        <div id="bookName"></div>
+        <div id="bookAuthor"></div>
+        <div id="audiobooks"></div>
+
+        <button id="ownedOrBuy"></button><br />
+        <button id="library"></button><br />
+
+        <button id="like"></button><br />
+        <button id="superLike"></button><br />
+        <button id="dislike"></button><br />
+      </div>
+    </div>
+  </div>
+
+  <script>
+    import { createAuthTrpc } from "../../utils/trpc";
+
+    const urlSearchParams = new URLSearchParams(window.location.search);
+    const params = Object.fromEntries(urlSearchParams.entries());
+    const id = params.id;
+    const trpc = createAuthTrpc()!;
+    const bookName = document.getElementById("bookName") as HTMLDivElement;
+    const bookAuthor = document.getElementById("bookAuthor") as HTMLDivElement;
+    const audiobooks = document.getElementById("audiobooks") as HTMLDivElement;
+    const bookImage = document.getElementById("bookImage") as HTMLImageElement;
+    const ownedOrBuy = document.getElementById(
+      "ownedOrBuy",
+    ) as HTMLButtonElement;
+    const library = document.getElementById("library") as HTMLButtonElement;
+    const like = document.getElementById("like") as HTMLButtonElement;
+    const superLike = document.getElementById("superLike") as HTMLButtonElement;
+    const dislike = document.getElementById("dislike") as HTMLButtonElement;
+
+    let bookInfo: {
+      id: string;
+      name: string;
+      createdAt: string | null;
+      updatedAt: string | null;
+      author: string;
+      content: string;
+      thumbnail: string | null;
+      price: number | null;
+      owned: boolean;
+      like?: boolean;
+      dislike?: boolean;
+      superLike?: boolean;
+    };
+
+    const main = async () => {
+      try {
+        bookInfo = await trpc.book.getBookInfo.query(id);
+        bookName.textContent = bookInfo.name;
+        bookAuthor.textContent = bookInfo.author;
+
+        bookImage.src = bookInfo.thumbnail!;
+        bookImage.height = 100;
+        bookImage.width = 100;
+        if (bookInfo.owned) {
+          ownedOrBuy.textContent = "Play";
+          ownedOrBuy.onclick = () => {
+            window.location.href = `/client/booka/book?id=${id}`;
+          };
+
+          like.textContent = "like";
+          superLike.textContent = "super like";
+          dislike.textContent = "dislike";
+
+          library.textContent = "in you library";
+          library.onclick = () => {
+            window.location.href = `/client/book?id=${id}`;
+          };
+        } else {
+          ownedOrBuy.textContent = "Buy";
+          library.classList.add("hidden");
+
+          like.classList.add("hidden");
+          superLike.classList.add("hidden");
+          dislike.classList.add("hidden");
+
+          ownedOrBuy.onclick = () => {
+            window.location.href = `/client/buy?id=${id}`;
+          };
+        }
+      } catch (error) {
+        console.log(`Error in the main function client/book.astro ${error}`);
+      }
+    };
+
+    main();
+  </script>
+</LayoutClient>

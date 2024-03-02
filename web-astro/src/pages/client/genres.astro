@@ -1,0 +1,77 @@
+---
+import Layout from "../../layouts/LayoutClient.astro";
+---
+
+<Layout title="Genres">
+  <div>
+    <div id="genreName"></div>
+    <div id="listOfGenres" class="flex flex-col"></div>
+    <div id="listOfBooks" class="flex flex-col"></div>
+  </div>
+
+  <script>
+    import { createAuthTrpc } from "../../utils/trpc";
+
+    const params = new window.URLSearchParams(document.location.search);
+    const id = params.get("id");
+    const trpc = createAuthTrpc()!;
+
+    const genreName = document.getElementById("genreName") as HTMLDivElement;
+    const listOfGenres = document.getElementById(
+      "listOfGenres",
+    ) as HTMLDivElement;
+
+    const listOfBooks = document.getElementById(
+      "listOfBooks",
+    ) as HTMLDivElement;
+
+    const main = async () => {
+      const genreInfo = await trpc.genre.getGenre.query(id!);
+      const genreList = await trpc.genre.getGenres.query();
+      const booklist = await trpc.genre.getBooksUnderGenre.query(id!);
+
+      const filterdGenreList = genreList.filter((g) => {
+        return g.id !== id;
+      });
+
+      filterdGenreList.forEach((g) => {
+        const button = document.createElement("button");
+        button.textContent = g.name;
+
+        button.onclick = () => {
+          window.location.href = `/client/genres?id=${g.id}`;
+        };
+        listOfGenres.appendChild(button);
+      });
+
+      console.log(booklist);
+      booklist.forEach((b) => {
+        const div = document.createElement("div");
+        const img = document.createElement("img");
+        const name = document.createElement("h1");
+        const author = document.createElement("h1");
+        const price = document.createElement("h1");
+
+        div.onclick = () => {
+          window.location.href = `/client/book?id=${b.id}`;
+        };
+
+        img.src = `${b.thumbnail}`;
+        img.classList.add("h-48");
+        img.classList.add("w-48");
+        name.textContent = b.name;
+        author.textContent = b.author;
+        price.textContent = `${b.price}$`;
+
+        div.appendChild(img);
+        div.appendChild(name);
+        div.appendChild(author);
+        div.appendChild(price);
+        listOfBooks.appendChild(div);
+      });
+
+      genreName.textContent = genreInfo.name;
+    };
+    main();
+  </script>
+</Layout>

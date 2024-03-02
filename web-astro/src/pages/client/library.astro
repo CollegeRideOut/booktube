@@ -1,0 +1,65 @@
+---
+import LayoutClient from "../../layouts/LayoutClient.astro";
+---
+
+<LayoutClient title="Buy">
+  <div>
+    <div id="lib" class="flex"></div>
+  </div>
+
+  <script>
+    import { createAuthTrpc } from "../../utils/trpc";
+    const trpc = createAuthTrpc()!;
+    const lib = document.getElementById("lib") as HTMLDivElement;
+
+    async function main() {
+      try {
+        const libs = await trpc.library.getLibrary.query();
+
+        const createLibs = () => {
+          libs.forEach((books) => {
+            const parentDiv = document.createElement("div");
+            const imgDiv = document.createElement("div");
+
+            const img = document.createElement("img");
+            img.src = books.book.thumbnail!;
+            img.classList.add("h-40");
+            img.classList.add("w-40");
+
+            imgDiv.appendChild(img);
+
+            const dataDiv = document.createElement("div");
+            const bookname = document.createElement("h1");
+            const authorname = document.createElement("h1");
+            const listenButton = document.createElement("button");
+            listenButton.textContent = "Listen Now";
+
+            listenButton.onclick = () => {
+              window.location.href = `/client/booka/book?id=${books.book.id}`;
+            };
+
+            bookname.textContent = books.book.name;
+
+            dataDiv.appendChild(bookname);
+            dataDiv.appendChild(authorname);
+            dataDiv.appendChild(listenButton);
+
+            parentDiv.appendChild(imgDiv);
+            parentDiv.appendChild(dataDiv);
+
+            parentDiv.classList.add("flex");
+            parentDiv.classList.add("flex-row");
+
+            lib.appendChild(parentDiv);
+          });
+        };
+
+        createLibs();
+      } catch (error) {
+        console.log(`There was an error in client/librar ${error}`);
+      }
+    }
+
+    main();
+  </script>
+</LayoutClient>

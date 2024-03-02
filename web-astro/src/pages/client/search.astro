@@ -1,0 +1,67 @@
+---
+import Layout from "../../layouts/LayoutClient.astro";
+---
+
+<Layout title="search">
+  <div id="bookContainer"></div>
+
+  <script>
+    import { createAuthTrpc } from "../../utils/trpc";
+
+    const bookContainer = document.getElementById(
+      "bookContainer",
+    ) as HTMLDivElement;
+
+    const urlSearchParams = new URLSearchParams(window.location.search);
+
+    const params = Object.fromEntries(urlSearchParams.entries());
+    const searchTerm = params.term;
+    const trpc = createAuthTrpc()!;
+
+    async function fetchBooks() {
+      try {
+        const books = await trpc.book.fuzzySearchByName.query(searchTerm);
+
+        const bElements: HTMLDivElement[] = [];
+        books.forEach((b) => {
+          const div = document.createElement("div");
+
+          const div2 = document.createElement("div");
+          const img = document.createElement("img");
+          img.src = b.thumbnail;
+          img.className = "h-24 w-24";
+
+          div2.appendChild(img);
+
+          const div3 = document.createElement("div");
+          const span1 = document.createElement("span");
+          const span2 = document.createElement("span");
+          span1.textContent = b.name;
+          span2.textContent = b.author;
+          div3.appendChild(span1);
+          div3.appendChild(span2);
+          div.appendChild(div2);
+          div.appendChild(div3);
+
+          div.onclick = () => {
+            window.location.href = `/client/book?id=${b.id}`;
+          };
+
+          bElements.push(div);
+        });
+
+        bElements.forEach((e) => {
+          bookContainer.appendChild(e);
+        });
+      } catch (error) {
+        console.log("Error in the search.astro fetchBooks", error);
+      }
+    }
+
+    function main() {
+      fetchBooks();
+    }
+
+    main();
+  </script>
+</Layout>

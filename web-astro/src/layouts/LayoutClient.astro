@@ -1,0 +1,250 @@
+---
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content="Astro description" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+  </head>
+  <body>
+    <div class="flex flex-col min-h-screen">
+      <nav
+        class="flex h-14 items-center border-b bg-gray-100/40 px-6 dark:bg-gray-800/40 justify-start"
+      >
+        <a
+          class="flex items-center gap-2 font-semibold ml-4"
+          href="/client/browse"
+          ><svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="h-6 w-6"
+            ><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
+            ></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg
+          ><span class="">Home</span></a
+        >
+        <a
+          class="flex items-center gap-2 font-semibold ml-4"
+          href="/client/library"
+          ><svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="h-6 w-6"
+            ><path d="m16 6 4 14"></path><path d="M12 6v14"></path><path
+              d="M8 8v12"></path><path d="M4 4v16"></path></svg
+          ><span class="">Library</span></a
+        >
+
+        <a
+          class="flex items-center gap-2 font-semibold ml-4"
+          href="/client/profile"
+          ><svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="h-6 w-6"
+            ><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle
+              cx="12"
+              cy="7"
+              r="4"></circle></svg
+          ><span class="">Profile</span></a
+        >
+
+        <div class="relative group">
+          <a class="flex items-center gap-2 font-semibold ml-4"> Dropdown </a>
+
+          <div class="absolute z-10 hidden bg-grey-200 group-hover:block">
+            <div class="px-2 pt-2 pb-4 bg-red-200 shadow-lg">
+              <div class="dropdown-menu">
+                <ul id="dropdown"></ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 font-semibold ml-4">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="h-6 w-6"
+            ><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle
+              cx="12"
+              cy="7"
+              r="4"></circle></svg
+          >
+
+          <div class="relative group" id="searchingParent">
+            <input
+              class="peer w-full h-full bg-transparent text-blue-gray-700 font-sans font-normal outline outline-0 focus:outline-0 disabled:bg-blue-gray-50 disabled:border-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 placeholder-shown:border-t-blue-gray-200 border focus:border-2 border-t-transparent focus:border-t-transparent text-sm px-3 py-2.5 rounded-[7px] border-blue-gray-200 focus:border-gray-900"
+              id="searchBar"
+            />
+
+            <div
+              id="searchResultParent"
+              class="absolute z-10 hidden bg-grey-200"
+            >
+              <div class="px-2 pt-2 pb-4 bg-red-200 shadow-lg">
+                <div class="dropdown-menu">
+                  <div id="searchResultContainer" class="flex flex-row"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+      <main class="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6">
+        <slot />
+      </main>
+    </div>
+  </body>
+  <script>
+    import { createAuthTrpc } from "../utils/trpc";
+
+    const inputHasChanged = false;
+
+    const layoutTrpc = createAuthTrpc()!;
+    const searchBar = document.getElementById("searchBar") as HTMLInputElement;
+    const searchResultContainer = document.getElementById(
+      "searchResultContainer",
+    ) as HTMLDivElement;
+    const searchingParent = document.getElementById(
+      "searchingParent",
+    ) as HTMLDivElement;
+
+    const searchResultParent = document.getElementById(
+      "searchResultParent",
+    ) as HTMLDivElement;
+    const genreFetch = async () => {
+      try {
+        const dropdown = document.getElementById("dropdown");
+        const genres = await layoutTrpc.genre.getGenres.query();
+
+        genres.forEach((g) => {
+          const li = document.createElement("li");
+          const a = document.createElement("a");
+          a.classList.add("dropdown-item");
+          a.href = `/client/genres?id=${g.id}`;
+          a.textContent = g.name;
+          li.appendChild(a);
+          dropdown!.appendChild(li);
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    function debounce(func: () => void, timeout = 300) {
+      let timer: any;
+      return () => {
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+          func();
+        }, timeout);
+      };
+    }
+
+    searchingParent.addEventListener("focusin", () => {
+      searchResultParent.classList.remove("hidden");
+    });
+
+    searchingParent.addEventListener("focusout", () => {
+      if (!searchingParent.matches(":hover")) {
+        searchResultParent.classList.add("hidden");
+      }
+    });
+
+    async function fetchBooks() {
+      try {
+        const nameTerm = searchBar.value;
+        const books = await layoutTrpc.book.fuzzySearchByName.query(nameTerm);
+        searchResultContainer.innerHTML = "";
+        const bElements: HTMLDivElement[] = [];
+        books.forEach((b) => {
+          const div = document.createElement("div");
+
+          const div2 = document.createElement("div");
+          const img = document.createElement("img");
+          img.src = b.thumbnail;
+          img.className = "h-24 w-24";
+
+          div2.appendChild(img);
+
+          const div3 = document.createElement("div");
+          const span1 = document.createElement("span");
+          const span2 = document.createElement("span");
+          span1.textContent = b.name;
+          span2.textContent = b.author;
+          div3.appendChild(span1);
+          div3.appendChild(span2);
+          div.appendChild(div2);
+          div.appendChild(div3);
+
+          div.onclick = () => {
+            window.location.href = `/client/book?id=${b.id}`;
+          };
+
+          bElements.push(div);
+        });
+
+        bElements.forEach((e) => {
+          searchResultContainer.appendChild(e);
+        });
+      } catch (error) {
+        console.log("error layoutclient fetchbooks", error);
+      }
+      console.log("Saving data");
+    }
+
+    const processChange = debounce(fetchBooks);
+
+    searchBar.onkeyup = (e) => {
+      const value = (e.target as HTMLInputElement).value;
+      if (e.key === "Enter") {
+        window.location.href = `/client/search?term=${value}`;
+      } else {
+        processChange();
+      }
+    };
+    const layoutClientMain = async () => {
+      genreFetch();
+      fetchBooks();
+    };
+    layoutClientMain();
+  </script>
+</html>

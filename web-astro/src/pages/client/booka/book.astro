@@ -1,0 +1,476 @@
+---
+
+---
+
+<div class="bg-black h-screen">
+  <div>
+    <div class="absolute top-0 left-0 z-40" id="backButton">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="45"
+        height="45"
+        viewBox="0 0 24 24"
+      >
+        <path
+          fill="white"
+          d="m7.825 13l5.6 5.6L12 20l-8-8l8-8l1.425 1.4l-5.6 5.6H20v2z"></path>
+      </svg>
+    </div>
+    <div class="w-screen h-screen">
+      <video id="videoStream" autoplay loop class="w-full h-full absolute aspect-3/4"
+      ></video>
+      <audio id="audioStream" autoplay class="w-screen absolute bottom-0">
+      </audio>
+      <div class="w-screen absolute bottom-0 h-16 bg-black">
+        <div>
+          <input
+            id="progressBar"
+            type="range"
+            class="bg-blue-600 h-2.5 w-full rounded-full"
+          />
+
+          <div class="flex flex-row">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              id="playButton"
+              width="3em"
+              height="3em"
+              viewBox="0 0 24 24"
+            >
+              <path fill="white" d="M14 19V5h4v14zm-8 0V5h4v14z"></path>
+            </svg>
+
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="3rem"
+              height="3rem"
+              viewBox="0 0 24 24"
+            >
+              <g
+                fill="none"
+                stroke="white"
+                stroke-linecap="round"
+                stroke-width="1.5"
+              >
+                <path stroke-linejoin="round" d="m7.5 10.5l2.5-2v7"></path>
+                <path
+                  d="M12.5 13.75v-3.5a1.75 1.75 0 1 1 3.5 0v3.5a1.75 1.75 0 1 1-3.5 0Z"
+                ></path>
+                <path
+                  stroke-linejoin="round"
+                  d="M14 4.5L12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10a9.985 9.985 0 0 1-8-3.999M8 2.832A10.017 10.017 0 0 0 5 4.86A9.97 9.97 0 0 0 2 12c0 .685.069 1.354.2 2"
+                ></path>
+              </g>
+            </svg>
+
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="3rem"
+              height="3rem"
+              viewBox="0 0 24 24"
+            >
+              <g
+                fill="none"
+                stroke="white"
+                stroke-linecap="round"
+                stroke-width="1.5"
+              >
+                <path stroke-linejoin="round" d="m7.5 10.5l2.5-2v7"></path>
+                <path
+                  d="M12.5 13.75v-3.5a1.75 1.75 0 1 1 3.5 0v3.5a1.75 1.75 0 1 1-3.5 0Z"
+                ></path>
+                <path
+                  stroke-linejoin="round"
+                  d="M10 4.5L12 2C6.477 2 2 6.477 2 12c0 .685.069 1.354.2 2M16 2.832C19.532 4.375 22 7.9 22 12c0 5.523-4.477 10-10 10a9.984 9.984 0 0 1-8-4"
+                ></path>
+              </g>
+            </svg>
+
+            <div
+              id="dropdownHoverVolume"
+              data-dropdown-toggle="volumeHover"
+              data-dropdown-trigger="hover"
+            >
+              <div
+                id="volumeHover"
+                class="hidden bg-gray-200 absolute bottom-12 w-8 h-full dark:bg-gray-700 flex flex-row content-center justify-center"
+              >
+                <input
+                  id="volumeHoverInput"
+                  type="range"
+                  class="bg-blue-600 w-2.5 rounded-full"
+                  style="height: 100%;  "
+                />
+              </div>
+
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="3rem"
+                height="3rem"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  fill="white"
+                  d="m11.8 2.4l-.5 1C12.4 4.8 13 6.6 13 8.5c0 1.7-.5 3.2-1.3 4.6l.7.8c1.1-1.5 1.7-3.4 1.7-5.4c-.1-2.3-.9-4.4-2.3-6.1"
+                ></path>
+                <path
+                  fill="white"
+                  d="m10.8 4.4l-.5 1.1c.5.9.8 1.9.8 3c0 1-.3 2-.7 2.9l.7.9c.6-1.1 1-2.4 1-3.7c-.1-1.6-.5-3-1.3-4.2M4 5H0v6h4l5 4V1z"
+                ></path>
+              </svg>
+            </div>
+
+            <div id="bookName" class="text-white"></div>
+
+            <div>
+              <div class="relative group/audio">
+                <a
+                  class="flex items-center gap-2 font-semibold ml-4 text-white"
+                >
+                  audios/subs
+                </a>
+                <div
+                  class="absolute z-10 hidden absolute bottom-4 bg-grey-200 group-hover/audio:block"
+                >
+                  <div class="px-2 pt-2 pb-4 bg-red-200 shadow-lg">
+                    <div class="dropdown-menu">
+                      <ul id="audiosDropdown"></ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <p></p>
+          </div>
+        </div>
+      </div>
+      <div class="w-screen h-screen flex flex-row justify-center items-center">
+        <div id="subsStream" class="z-40 w-1/4 text-wrap bg-white"></div>
+      </div>
+    </div>
+  </div>
+  <script>
+    import { createAuthTrpc } from "../../../utils/trpc";
+    import { isAuthorized } from "../../../utils/isAuthorized";
+    import Hls from "hls.js";
+
+    const urlSearchParams = new URLSearchParams(window.location.search);
+    const params = Object.fromEntries(urlSearchParams.entries());
+
+    const dropdownHoverVolume = document.getElementById(
+      "dropdownHoverVolume",
+    ) as HTMLDivElement;
+    const volumeHover = document.getElementById(
+      "volumeHover",
+    ) as HTMLDivElement;
+
+    const volumeHoverInput = document.getElementById(
+      "volumeHoverInput",
+    ) as HTMLInputElement;
+
+    let itWasHidden = true;
+    dropdownHoverVolume.onclick = () => {
+      if (itWasHidden) {
+        volumeHover.classList.remove("hidden");
+      } else {
+        volumeHover.classList.add("hidden");
+      }
+    };
+    const audiosDropdown = document.getElementById(
+      "audiosDropdown",
+    ) as HTMLUListElement;
+
+    const id = params.id;
+    const LoABo = document.getElementById("LoABo") as HTMLSelectElement;
+    const bookid = params.id;
+    const authTrpc = createAuthTrpc();
+    const videoStream = document.getElementById(
+      "videoStream",
+    ) as HTMLVideoElement;
+    const audioStream = document.getElementById(
+      "audioStream",
+    ) as HTMLAudioElement;
+    const subsStream = document.getElementById("subsStream") as HTMLDivElement;
+    const progressBar = document.getElementById(
+      "progressBar",
+    ) as HTMLInputElement;
+    const playButton = document.getElementById("playButton") as HTMLElement &
+      SVGElement;
+    const bookName = document.getElementById("bookName") as HTMLDivElement;
+    const backButton = document.getElementById("backButton") as HTMLElement &
+      SVGElement;
+
+    let book: {
+      id: string;
+      name: string;
+      createdAt: string | null;
+      updatedAt: string | null;
+      author: string;
+      content: string;
+      thumbnail: string | null;
+    };
+    let isPlayingRn = true;
+
+    backButton.onclick = (e) => {
+      window.location.replace("/client/browse");
+    };
+
+    playButton.onclick = () => {
+      if (isPlayingRn) {
+        playButton.innerHTML =
+          '<path fill="white" d="M8 5.14v14l11-7z"></path>';
+        audioStream.pause();
+        videoStream.pause();
+        isPlayingRn = false;
+      } else {
+        playButton.innerHTML =
+          '<path fill="white" d="M14 19V5h4v14zm-8 0V5h4v14z" />';
+        audioStream.play();
+        videoStream.pause();
+        isPlayingRn = true;
+      }
+    };
+    audioStream.onended = () => {
+      videoStream.pause();
+    };
+    videoStream.onclick = () => {
+      if (isPlayingRn) {
+        videoStream.pause();
+        audioStream.pause();
+
+        playButton.innerHTML =
+          '<path fill="white" d="M8 5.14v14l11-7z"></path>';
+        audioStream.pause();
+        isPlayingRn = false;
+      } else {
+        videoStream.play();
+        audioStream.play();
+
+        playButton.innerHTML =
+          '<path fill="white" d="M14 19V5h4v14zm-8 0V5h4v14z" />';
+        isPlayingRn = true;
+      }
+    };
+
+    let loABo: {
+      id: string;
+      createdAt: string | null;
+      updatedAt: string | null;
+      bookId: string;
+      author: string;
+      audio: string;
+      language: "ENGLISH" | "SPANISH";
+      subs: {
+        id: string;
+        path: string;
+        language: "ENGLISH" | "SPANISH";
+        audiobookId: string;
+      }[];
+    }[] = [];
+
+    let LoVs: {
+      id: string;
+      createdAt: string | null;
+      updatedAt: string | null;
+      path: string;
+    }[] = [];
+
+    let currentVs: {
+      id: string;
+      createdAt: string | null;
+      updatedAt: string | null;
+      path: string;
+    };
+    let currentAbo: {
+      id: string;
+      createdAt: string | null;
+      updatedAt: string | null;
+      bookId: string;
+      author: string;
+      audio: string;
+      language: "ENGLISH" | "SPANISH";
+      subs: {
+        id: string;
+        path: string;
+        language: "ENGLISH" | "SPANISH";
+        audiobookId: string;
+      }[];
+    };
+    let currentSubs: any = {};
+
+    const hls = new Hls();
+    const update = async () => {
+      hls.loadSource(currentVs.path);
+      hls.on(Hls.Events.MEDIA_ATTACHED, function () {
+        console.log("video and hls.js are now bound together !");
+      });
+      hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
+        console.log(
+          "manifest loaded, found " + data.levels.length + " quality level",
+        );
+      });
+      hls.on(Hls.Events.LEVEL_SWITCHING, function (event, data) {
+        console.log("level switching", data);
+      });
+
+      videoStream.volume = 0;
+      hls.loadSource(currentVs.path);
+      hls.attachMedia(videoStream);
+    };
+
+    volumeHover.onchange = (e) => {
+      const val = parseFloat(volumeHoverInput.value) / 100;
+      audioStream.volume = val;
+    };
+
+    let currentLine: any = {};
+    audioStream.volume = 1;
+
+    progressBar.onmousedown = (e) => {
+      audioStream.pause();
+    };
+
+    progressBar.onmouseup = (e) => {
+      const val = (parseFloat(progressBar.value) / 100) * audioStream.duration;
+      audioStream.currentTime = val;
+
+      playButton.innerHTML =
+        '<path fill="white" d="M14 19V5h4v14zm-8 0V5h4v14z" />';
+      audioStream.play();
+      videoStream.play();
+    };
+
+    progressBar.onchange = (e) => {
+      const val = (parseFloat(progressBar.value) / 100) * audioStream.duration;
+      audioStream.currentTime = val;
+
+      playButton.innerHTML =
+        '<path fill="white" d="M14 19V5h4v14zm-8 0V5h4v14z" />';
+      audioStream.play();
+      videoStream.play();
+    };
+
+    audioStream.ontimeupdate = function (e) {
+      const value = (audioStream.currentTime / audioStream.duration) * 100;
+      progressBar.value = "" + value;
+
+      const t = audioStream.currentTime * 1000;
+      if (currentLine.start < t || currentLine.end > t) {
+        currentLine =
+          currentSubs.events.find((ee: any) => {
+            return t >= ee.start && t <= ee.end;
+          }) || currentLine;
+      }
+
+      subsStream.innerText = currentLine.text;
+    };
+
+    const updateAudioSbus = async (audioId: string, subsId?: string) => {
+      const ab = loABo.find((a) => {
+        return a.id === audioId;
+      });
+      let subs = ab?.subs[0];
+      if (subsId) {
+        subs = ab!.subs.find((s) => {
+          return s.id === subsId;
+        });
+      }
+
+      currentAbo = ab!;
+
+      currentSubs = await (await fetch(subs!.path, { method: "GET" })).json();
+
+      audioStream.src = currentAbo.audio;
+      currentLine = currentSubs.events[0];
+    };
+    const createAudiosSubsMenu = () => {
+      if (loABo.length === 0) {
+        console.log("loABo emtpy ");
+        return;
+      } else {
+        loABo.forEach((ab) => {
+          const li = document.createElement("li");
+          const div1 = document.createElement("div");
+          li.appendChild(div1);
+          const div2 = document.createElement("div");
+          div1.appendChild(div2);
+          div2.className = "relative group";
+          const a = document.createElement("a");
+
+          a.onclick = () => {
+            updateAudioSbus(ab.id);
+          };
+          div2.appendChild(a);
+          a.className = "flex items-center gap-2 font-semibold ml-4 text-white";
+          a.textContent = ab.language;
+          // a tag has no kids
+
+          const div3 = document.createElement("div");
+          div2.appendChild(div3);
+          div3.className =
+            "absolute z-10 hidden absolute bottom-4 left-4 bg-grey-200 group-hover:block";
+          const div4 = document.createElement("div");
+          div3.appendChild(div4);
+          div4.className = "px-2 pt-2 pb-4 bg-red-200 shadow-lg";
+          const div5 = document.createElement("div");
+          div4.appendChild(div5);
+          div5.className = "dropdown-menu";
+          const ul = document.createElement("ul");
+          div5.appendChild(ul);
+
+          console.log("here the length of the subs", ab.subs);
+          ab.subs.forEach((sub) => {
+            const li2 = document.createElement("li");
+            li2.textContent = sub.language;
+            ul.appendChild(li2);
+
+            li2.onclick = () => {
+              updateAudioSbus(ab.id, sub.id);
+            };
+          });
+          audiosDropdown.appendChild(li);
+        });
+      }
+    };
+
+    const main = async () => {
+      try {
+        const isAuth = await isAuthorized();
+
+        loABo = await authTrpc!.audiobook.getLoABoWithSubs.query(id);
+        LoVs = await authTrpc!.video.getLoVi.query();
+        console.log(LoVs.length);
+        book = await authTrpc!.book.getBook.query(id);
+        bookName.innerText = book.name;
+        currentAbo = loABo[0];
+
+        currentVs = LoVs[0];
+        // this is just for now for my symb mistake
+
+        console.log(currentAbo.subs[0].path);
+        currentSubs = await (
+          await fetch(currentAbo.subs[0].path, { method: "GET" })
+        ).json();
+
+        audioStream.src = currentAbo.audio;
+        currentLine = currentSubs.events[0];
+        console.log(currentLine);
+        update();
+        createAudiosSubsMenu();
+      } catch (error) {
+        console.log(`Error in client/book/book ${error}`);
+      }
+
+      console.log("hello");
+    };
+
+    let videos = 0;
+    window.onscroll = function (e) {
+      videos = (videos + 1) % LoVs.length;
+      currentVs = LoVs[videos];
+      update();
+      console.log("i happend");
+    };
+    main();
+  </script>
+</div>

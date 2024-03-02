@@ -1,0 +1,33 @@
+{
+  "name": "web-astro",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "sst bind astro dev",
+    "start": "sst bind astro dev",
+    "build": "astro check && astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/check": "^0.4.1",
+    "@astrojs/preact": "^3.1.0",
+    "@astrojs/tailwind": "^5.1.0",
+    "@stripe/stripe-js": "^2.4.0",
+    "@trpc/client": "^10.45.1",
+    "@trpc/server": "^10.45.1",
+    "astro": "^4.4.0",
+    "astro-sst": "^2.40.3",
+    "hls.js": "^1.5.5",
+    "local": "^0.3.3",
+    "preact": "^10.19.5",
+    "shikiji-core": "0.10.0-beta.9",
+    "superjson": "^2.2.1",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.3.3"
+  },
+  "devDependencies": {
+    "prettier": "^3.2.5",
+    "prettier-plugin-astro": "^0.13.0"
+  }
+}

@@ -1,0 +1,87 @@
+---
+import LayoutClient from "../../layouts/LayoutClient.astro";
+---
+
+<LayoutClient title="Buy">
+  <h1>Payment</h1>
+
+  <form id="payment-form">
+    <div id="link-authentication-element">
+      <!-- Elements will create authentication element here -->
+    </div>
+    <div id="payment-element">
+      <!-- Elements will create form elements here -->
+    </div>
+    <button id="submit">Pay now</button>
+    <div id="error-message">
+      <!-- Display error message to your customers here -->
+    </div>
+  </form>
+
+  <div id="messages" role="alert" style="display: none;"></div>
+  <script>
+    import { createAuthTrpc } from "../../utils/trpc";
+    import { loadStripe } from "@stripe/stripe-js";
+
+    const stripe = await loadStripe(import.meta.env.PUBLIC_STRIPE_KEY);
+    const buy = document.getElementById("buy") as HTMLButtonElement;
+    const urlSearchParams = new URLSearchParams(window.location.search);
+    const params = Object.fromEntries(urlSearchParams.entries());
+    const id = params.id;
+    const trpc = createAuthTrpc()!;
+
+    const form = document.getElementById("payment-form") as HTMLFormElement;
+
+    let submitted = false;
+    async function main() {
+      try {
+        const { clientSecret } = await trpc.book.generatePaymentIntent.mutate({
+          bookId: id,
+        });
+
+        if (clientSecret === null) {
+          throw new Error("client secret was null");
+        }
+
+        const elements = stripe!.elements({ clientSecret: clientSecret });
+        const payment = elements.create("payment");
+        payment.update;
+        payment.mount("#payment-element");
+
+        form.addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          // Disable double submission of the form
+          if (submitted) {
+            return;
+          }
+          submitted = true;
+          form.querySelector("button")!.disabled = true;
+
+          const nameInput = document.querySelector("#name");
+
+          // Confirm the payment given the clientSecret
+          // from the payment intent that was just created on
+          // the server.
+          const { error: stripeError } = await stripe!.confirmPayment({
+            elements,
+            confirmParams: {
+              return_url: `${window.location.origin}/client/success`,
+            },
+          });
+
+          if (stripeError) {
+            // reenable the form.
+            submitted = false;
+            form.querySelector("button")!.disabled = false;
+            return;
+          }
+        });
+      } catch (error) {
+        console.log(`There was an error in client/buy.astro ${error}`);
+      }
+    }
+
+    main();
+  </script>
+</LayoutClient>

@@ -1,0 +1,40 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Log In">
+  <h1>THIS IS THE REGISTER SITE</h1>
+
+  <form id="registerFrom">
+    <label>Email: <input id="email" type="email" /></label>
+    <label>Name: <input id="name" /></label>
+    <label>Password: <input id="password" type="password" /></label>
+    <button type="submit"> Register</button>
+    <div>Already have a Account <a id="login">click here to Login</a></div>
+  </form>
+
+  <script>
+    import { trpc } from "../utils/trpc";
+    const registerForm = document.getElementById(
+      "registerFrom",
+    ) as HTMLFormElement;
+
+    const email = document.getElementById("email") as HTMLInputElement;
+    const name = document.getElementById("name") as HTMLInputElement;
+    const password = document.getElementById("password") as HTMLInputElement;
+
+    registerForm.onsubmit = async (e) => {
+      e.preventDefault();
+      try {
+        await trpc.auth.register.mutate({
+          email: email.value,
+          name: name.value,
+          password: password.value,
+        });
+        window.location.replace("/login");
+      } catch (error) {
+        console.log(`ERROR in the register ${error}`);
+      }
+    };
+  </script>
+</Layout>

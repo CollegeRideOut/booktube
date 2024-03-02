@@ -1,0 +1,63 @@
+---
+import Layout from "../../layouts/LayoutClient.astro";
+---
+
+<Layout title="Log In">
+  <div id="LoLoBo" class="flex flex-col"></div>
+  <script>
+    import { isAuthorized } from "../../utils/isAuthorized";
+    import { createAuthTrpc } from "../../utils/trpc";
+
+    const authTrpc = createAuthTrpc();
+    const LoLoBo = document.getElementById("LoLoBo") as HTMLDivElement;
+
+    const main = async () => {
+      try {
+        const auth = await isAuthorized();
+        if (!auth) {
+          window.location.replace("/");
+        }
+        const genres = await authTrpc!.genre.getGLoLoBo.query();
+        console.log(genres);
+
+        genres.forEach((g) => {
+          const genreDiv = document.createElement("div");
+          const genreTitle = document.createElement("h1");
+          const booksDiv = document.createElement("div");
+          genreTitle.textContent = g.name;
+          genreDiv.appendChild(genreTitle);
+
+          booksDiv.classList.add("flex", "flex-row");
+
+          g.books.forEach((book) => {
+            const div = document.createElement("div");
+            div.classList.add("ml-4");
+            const nameH1 = document.createElement("h3");
+            const authorH2 = document.createElement("h3");
+            const imgThumbnail = document.createElement("img");
+            nameH1.textContent = `Name: ${book.name}`;
+            authorH2.textContent = `Author: ${book.author}`;
+            imgThumbnail.src = book.thumbnail!;
+            imgThumbnail.height = 100;
+            imgThumbnail.width = 100;
+            div.appendChild(imgThumbnail);
+            div.appendChild(nameH1);
+            div.appendChild(authorH2);
+            div.onclick = () => {
+              window.location.replace(`/client/book?id=${book.id}`);
+            };
+            booksDiv.appendChild(div);
+          });
+          genreDiv.appendChild(booksDiv);
+          LoLoBo.appendChild(genreDiv);
+        });
+      } catch (error) {
+        console.log(`error int the browse.ts error ${error}`);
+
+        window.location.replace("/");
+      }
+    };
+
+    main();
+  </script>
+</Layout>
