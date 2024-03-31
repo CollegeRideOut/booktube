@@ -1,7 +1,14 @@
-import { Dimensions, Pressable, ScrollView, Text, View } from 'react-native';
+import {
+  Dimensions,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { api } from '../../../../util/trpc';
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Image } from 'expo-image';
 import { useGlobalSearchParams, useRouter } from 'expo-router';
 import { StarRatingDisplay } from 'react-native-star-rating-widget';
@@ -9,110 +16,218 @@ import { StarRatingDisplay } from 'react-native-star-rating-widget';
 export default function DiscoverGenreId() {
   const navigation = useRouter();
 
-  const { genreId } = useGlobalSearchParams();
+  const { genreId, genreName } = useGlobalSearchParams();
   const books = api.genre.getBooksUnderGenre.useQuery(genreId as string);
 
-  console.log('in book we got');
+  const [searchTerm, setSearchTerm] = useState('');
+  const searchBarRef = useRef<any>();
+
   return (
-    <ScrollView
+    <SafeAreaView
       style={{
         backgroundColor: '#202020',
         width: Dimensions.get('window').width,
         flex: 1,
       }}
     >
-      <SafeAreaView>
+      <ScrollView
+        style={{
+          backgroundColor: '#202020',
+          display: 'flex',
+          flexDirection: 'column',
+          flex: 1,
+          rowGap: 20,
+        }}
+      >
         <View
           style={{
             display: 'flex',
-            flexDirection: 'row',
-            flexWrap: 'wrap',
-            justifyContent: 'space-around',
-            width: Dimensions.get('window').width,
+            rowGap: 20,
+            width: '100%',
+            flexDirection: 'column',
+            flex: 1,
+            padding: '5%',
           }}
         >
-          {books.data &&
-            books.data.map((b) => {
-              return (
-                <View
-                  key={b.id}
-                  style={{
-                    width: 136,
-                    height: 261,
-                    marginBottom: 20,
-                    marginTop: 10,
-                  }}
-                >
-                  <Pressable
+          {/* header part 1  */}
+          <View
+            style={{
+              flexDirection: 'row',
+              width: '100%',
+              alignItems: 'center',
+            }}
+          >
+            <Image
+              source={require('../../../../assets/Back_Icon.png')}
+              style={{
+                width: 11.81,
+
+                position: 'absolute',
+                top: 3,
+                height: 20,
+              }}
+            />
+            <View
+              style={{
+                width: '100%',
+                flexDirection: 'row',
+
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 24,
+                  color: 'white',
+                  fontFamily: 'Inter-600',
+                }}
+              >
+                {genreName}
+              </Text>
+            </View>
+          </View>
+
+          {/* header part 2 */}
+          <View
+            style={{
+              width: '100%',
+            }}
+          >
+            <View
+              style={{
+                width: '100%',
+                backgroundColor: '#303030',
+                height: 45,
+                borderRadius: 5,
+                flexDirection: 'row',
+                justifyContent: 'space-evenly',
+
+                alignItems: 'center',
+              }}
+            >
+              <TextInput
+                ref={searchBarRef}
+                style={{
+                  color: 'white',
+                  width: '100%',
+                  paddingLeft: '5%',
+                  backgroundColor: '#303030',
+                  borderRadius: 5,
+                  fontWeight: 'bold',
+                  height: 45,
+                  fontFamily: 'Inter-Bold',
+                }}
+                placeholderTextColor='white'
+                placeholder='SEARCH TITLES'
+                value={searchTerm}
+                onChangeText={(t) => {
+                  setSearchTerm(t);
+                }}
+              />
+            </View>
+          </View>
+
+          {/* main content */}
+          <View
+            style={{
+              rowGap: 30,
+              flexDirection: 'row',
+              flexWrap: 'wrap',
+              columnGap: 30,
+            }}
+          >
+            {books.data &&
+              books.data.map((b) => {
+                return (
+                  <View
                     key={b.id}
-                    onPress={() => {
-                      navigation.push({
-                        pathname: '/(tabs)/home/[book]',
-                        params: { book: b.id },
-                      });
+                    style={{
+                      width: 150,
+                      height: 261,
+                      marginBottom: 20,
+                      marginTop: 10,
                     }}
                   >
-                    <View>
-                      <View>
-                        <Image
-                          source={b.thumbnailLong!}
-                          alt='hello why is not working'
-                          style={{ width: 136, height: 199 }}
-                        />
-                      </View>
-                      <View
-                        style={{
-                          width: 136,
-                          height: 62,
-
-                          backgroundColor: '#3B3B3B',
-                        }}
-                      >
-                        <View style={{ marginLeft: 10 }}>
-                          <Text
-                            ellipsizeMode='tail'
-                            numberOfLines={1}
+                    <Pressable
+                      style={{}}
+                      key={b.id}
+                      onPress={() => {
+                        navigation.push({
+                          pathname: '/(tabs)/home/[book]',
+                          params: { book: b.id },
+                        });
+                      }}
+                    >
+                      <View style={{}}>
+                        <View>
+                          <Image
+                            source={b.thumbnailLong!}
+                            alt='hello why is not working'
                             style={{
-                              color: 'white',
-                              fontWeight: 'bold',
-                              flexWrap: 'nowrap',
-                              fontSize: 14,
+                              borderTopLeftRadius: 8,
+                              borderTopRightRadius: 8,
+                              width: 150,
+                              height: 218,
                             }}
-                          >
-                            {b.name}
-                          </Text>
-
-                          <StarRatingDisplay
-                            rating={b.rating}
-                            style={{ margin: 0, padding: 0 }}
-                            starStyle={{
-                              margin: 0,
-                              padding: 0,
-                              marginHorizontal: 0,
-                            }}
-                            maxStars={5}
-                            starSize={15}
-                            enableHalfStar
                           />
+                        </View>
+                        <View
+                          style={{
+                            width: 150,
+                            padding: '5%',
+                            borderBottomLeftRadius: 8,
+                            borderBottomRightRadius: 8,
+                            backgroundColor: '#3B3B3B',
+                          }}
+                        >
+                          <View style={{ rowGap: 5 }}>
+                            <Text
+                              ellipsizeMode='tail'
+                              numberOfLines={1}
+                              style={{
+                                color: 'white',
+                                fontWeight: 'bold',
+                                flexWrap: 'nowrap',
+                                fontSize: 14,
+                              }}
+                            >
+                              {b.name}
+                            </Text>
 
-                          <Text
-                            ellipsizeMode='tail'
-                            numberOfLines={1}
-                            style={{
-                              color: '#D9D9D9',
-                            }}
-                          >
-                            {b.author}
-                          </Text>
+                            <StarRatingDisplay
+                              rating={b.rating}
+                              style={{ margin: 0, padding: 0 }}
+                              color='#FFCA0E'
+                              starStyle={{
+                                margin: 0,
+                                padding: 0,
+                                marginHorizontal: 0,
+                              }}
+                              maxStars={5}
+                              starSize={15}
+                              enableHalfStar
+                            />
+
+                            <Text
+                              ellipsizeMode='tail'
+                              numberOfLines={1}
+                              style={{
+                                color: '#D9D9D9',
+                              }}
+                            >
+                              {b.author}
+                            </Text>
+                          </View>
                         </View>
                       </View>
-                    </View>
-                  </Pressable>
-                </View>
-              );
-            })}
+                    </Pressable>
+                  </View>
+                );
+              })}
+          </View>
         </View>
-      </SafeAreaView>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }

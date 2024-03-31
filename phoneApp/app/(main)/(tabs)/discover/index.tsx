@@ -1,64 +1,145 @@
-import { Dimensions, Pressable, ScrollView, Text, View } from 'react-native';
+import {
+  Dimensions,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { api } from '../../../../util/trpc';
-import { useEffect } from 'react';
-import { Image } from 'expo-image';
+import { useEffect, useState, useRef } from 'react';
+import { Image, ImageBackground } from 'expo-image';
 import { useGlobalSearchParams, useRouter } from 'expo-router';
 
 export default function DiscoverIndex() {
   const navigation = useRouter();
   const genres = api.genre.getGenres.useQuery();
 
+  const [searchTerm, setSearchTerm] = useState('');
+  const searchBarRef = useRef<any>();
+
+
   console.log('in book we got');
   return (
-    <ScrollView
+    <SafeAreaView
       style={{
-        backgroundColor: '#202020',
-        width: Dimensions.get('window').width,
         flex: 1,
+        height: Dimensions.get('window').height,
+        backgroundColor: '#202020',
       }}
     >
-      <SafeAreaView>
-        {genres.data && (
+      <ScrollView
+        style={{
+          backgroundColor: '#202020',
+          display: 'flex',
+          flexDirection: 'column',
+          flex: 1,
+          rowGap: 20,
+        }}
+      >
+        <View
+          style={{
+            display: 'flex',
+            rowGap: 20,
+            width: '100%',
+            flexDirection: 'column',
+            flex: 1,
+
+            padding: '5%',
+          }}
+        >
+          {/* header */}
+
           <View
             style={{
-              display: 'flex',
-              flexDirection: 'row',
-              flexWrap: 'wrap',
-              justifyContent: 'space-around',
-              width: Dimensions.get('window').width,
+              width: '100%',
             }}
           >
-            {genres.data.map((g) => {
-              return (
-                <Pressable
-                  key={g.id}
-                  style={{
-                    marginBottom: 10,
-                    height: 94,
-                    width: 164,
-                    borderRadius: 5,
-                    display: 'flex',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: 'gray',
-                  }}
-                  onPress={() => {
-                    navigation.push({
-                      pathname: '/(tabs)/discover/[genreId]',
+            <View
+              style={{
+                width: '100%',
+                backgroundColor: '#303030',
+                height: 45,
+                borderRadius: 5,
+                flexDirection: 'row',
+                justifyContent: 'space-evenly',
 
-                      params: { genreId: g.id },
-                    });
-                  }}
-                >
-                  <Text style={{ color: 'white' }}>{g.name}</Text>
-                </Pressable>
-              );
-            })}
+                alignItems: 'center',
+              }}
+            >
+              <TextInput
+                ref={searchBarRef}
+                style={{
+                  color: 'white',
+                  width: '100%',
+                  paddingLeft: '5%',
+                  backgroundColor: '#303030',
+                  borderRadius: 5,
+                  fontWeight: 'bold',
+                  height: 45,
+                  fontFamily: 'Inter-Bold',
+                }}
+                placeholderTextColor='white'
+                placeholder='DISCOVER'
+                value={searchTerm}
+                onChangeText={(t) => {
+                  setSearchTerm(t);
+                }}
+              />
+            </View>
           </View>
-        )}
-      </SafeAreaView>
-    </ScrollView>
+
+          <View
+            style={{
+              rowGap: 20,
+              flexDirection: 'row',
+              flexWrap: 'wrap',
+              columnGap: 20,
+            }}
+          >
+            {genres.data &&
+              genres.data.map((g) => {
+                return (
+                  <Pressable
+                    key={g.id}
+                    style={{ width: 155, height: 87 }}
+                    onPress={() => {
+                      navigation.push({
+                        pathname: '/(main)/(tabs)/discover/[genreId]',
+                        params: { genreId: g.id, genreName: g.name },
+                      });
+                    }}
+                  >
+                    <ImageBackground
+                      source={require('../../../../assets/genreLogo.png')}
+                      style={{
+                        width: 155,
+                        padding: '5%',
+                        height: 87,
+                        flexDirection: 'row',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontSize: 20,
+                          fontFamily: 'Inter-Bold',
+                          color: 'white',
+
+                          textAlign: 'center',
+                        }}
+                      >
+                        {g.name}
+                      </Text>
+                    </ImageBackground>
+                  </Pressable>
+                );
+              })}
+          </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }

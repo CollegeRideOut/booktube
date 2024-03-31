@@ -66,6 +66,7 @@ export default function Login() {
           <Text
             style={{
               color: 'white',
+              fontFamily: 'Inter-800',
               fontWeight: '800',
               fontSize: 40,
             }}
@@ -77,6 +78,7 @@ export default function Login() {
               textAlign: 'center',
               color: '#D9D9D9',
               fontWeight: '400',
+              fontFamily: 'Inter',
               fontSize: 14,
             }}
           >
@@ -107,6 +109,7 @@ export default function Login() {
             <Text
               style={{
                 fontWeight: 'bold',
+                fontFamily: 'Inter-Bold',
                 textTransform: 'uppercase',
                 fontSize: 16,
               }}
@@ -134,11 +137,12 @@ export default function Login() {
               style={{
                 fontWeight: 'bold',
                 textTransform: 'uppercase',
+                fontFamily: 'Inter-Bold',
                 fontSize: 16,
                 color: 'white',
               }}
             >
-              Sing in
+              Sign in
             </Text>
           </Pressable>
         </View>
@@ -152,6 +156,7 @@ export default function Login() {
           <Text
             style={{
               fontSize: 12,
+              fontFamily: 'Inter',
               color: '#D9D9D9',
             }}
           >
@@ -160,6 +165,8 @@ export default function Login() {
           <Text
             style={{
               fontSize: 12,
+
+              fontFamily: 'Inter-Bold',
               fontWeight: 'bold',
               color: '#D9D9D9',
             }}

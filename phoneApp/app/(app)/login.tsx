@@ -39,7 +39,6 @@ export default function Login() {
         flex: 1,
         height: Dimensions.get('window').height,
         backgroundColor: '#202020',
-        opacity: 1,
       }}
     >
       <View

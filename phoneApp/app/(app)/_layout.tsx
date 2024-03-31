@@ -5,6 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 import { Dimensions, Pressable, Text, View } from 'react-native';
 import { useFocusNotifyOnChangeProps } from '../../util/stopRerender';
+import { useFonts } from 'expo-font';
 
 enum StateOfAuth {
   AUTHORIZED = 0,

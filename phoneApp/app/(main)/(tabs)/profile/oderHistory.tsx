@@ -28,10 +28,51 @@ export default function UpdateInfo() {
     >
       <View
         style={{
-          margin: 20,
+          display: 'flex',
+          flexDirection: 'column',
           flex: 1,
+          padding: '5%',
+          rowGap: 20,
+          width: '100%',
         }}
       >
+        <View
+          style={{
+            flexDirection: 'row',
+            width: '100%',
+            alignItems: 'center',
+          }}
+        >
+          <Image
+            source={require('../../../../assets/Back_Icon.png')}
+            style={{
+              width: 11.81,
+              top: 3,
+              position: 'absolute',
+              height: 20,
+            }}
+          />
+          <View
+            style={{
+              width: '100%',
+              flexDirection: 'row',
+
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 24,
+                color: 'white',
+                fontFamily: 'Inter-600',
+              }}
+            >
+              Order History
+            </Text>
+          </View>
+        </View>
+
         {libraryInfo.data && (
           <FlatList
             data={libraryInfo.data}
@@ -39,24 +80,69 @@ export default function UpdateInfo() {
             renderItem={({ item }) => {
               return (
                 <View
+                  key={item.id}
                   style={{
-                    height: 153,
                     width: '100%',
-                    backgroundColor: '#3B3B3B',
+                    height: 153,
+                    flexDirection: 'row',
+                    columnGap: 20,
+                    backgroundColor: '#303030',
+                    borderRadius: 5,
+                    alignItems: 'center',
+                    paddingLeft: '4%',
                   }}
                 >
-                  <View style={{ display: 'flex', flexDirection: 'row' }}>
-                    <View>
-                      <Image
-                        source={item.book.thumbnailLong!}
-                        style={{ height: 130, width: 81.6 }}
-                      />
-                    </View>
-                    <View>
-                      <Text style={{ color: 'white' }}>{item.book.name}</Text>
-                      <Text style={{ color: 'white' }}>{item.createdAt}</Text>
-                      <Text style={{ color: 'white' }}>{item.book.price}</Text>
-                    </View>
+                  {/* image */}
+                  <View>
+                    <Image
+                      source={{ uri: item.book.thumbnailLong }}
+                      style={{ width: 81.64, height: 130, borderRadius: 4 }}
+                    />
+                  </View>
+                  {/* content */}
+                  <View
+                    style={{
+                      rowGap: 8,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: 'white',
+                        fontWeight: '500',
+                        fontFamily: 'Inter-500',
+                        fontSize: 18,
+                      }}
+                    >
+                      {item.book.name}
+                    </Text>
+                    <Text
+                      style={{
+                        color: '#D9D9D9',
+                        fontFamily: 'Inter',
+                        fontSize: 14,
+                      }}
+                    >
+                      {item.createdAt}
+                    </Text>
+                    <Text
+                      style={{
+                        color: 'white',
+                        fontSize: 14,
+                        fontFamily: 'Inter-Bold',
+                      }}
+                    >
+                      ${item.book.price}
+                    </Text>
+
+                    <Text
+                      style={{
+                        color: '#57FF3B',
+                        fontFamily: 'Inter',
+                        fontSize: 14,
+                      }}
+                    >
+                      Success
+                    </Text>
                   </View>
                 </View>
               );

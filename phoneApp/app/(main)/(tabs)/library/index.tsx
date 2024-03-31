@@ -58,7 +58,6 @@ export default function LibraryIndex() {
                 borderRadius: 5,
                 flexDirection: 'row',
                 justifyContent: 'space-evenly',
-
                 alignItems: 'center',
               }}
             >
@@ -124,8 +123,6 @@ export default function LibraryIndex() {
                 <Text
                   style={{
                     color: libraryTab === 'ALL' ? 'black' : 'white',
-
-              fontFamily: 'Inter-Black',
                     fontSize: 18,
                     fontWeight: 'bold',
                   }}

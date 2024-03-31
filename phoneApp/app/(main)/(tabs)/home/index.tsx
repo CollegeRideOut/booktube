@@ -18,6 +18,7 @@ export default function IndexHome() {
   const gLoLoBo = api.genre.getGLoLoBo.useQuery();
   const featuredBook = api.book.getFeaturedBook.useQuery();
 
+
   return (
     <SafeAreaView
       style={{
@@ -165,9 +166,7 @@ export default function IndexHome() {
                                     <View
                                       style={{
                                         width: 136,
-                                        height: 72,
-                                        paddingLeft: '5%',
-                                        paddingTop: '5%',
+                                        padding: '5%',
                                         borderBottomLeftRadius: 8,
                                         borderBottomRightRadius: 8,
                                         backgroundColor: '#3B3B3B',
