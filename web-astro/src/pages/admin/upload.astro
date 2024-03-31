@@ -97,85 +97,7 @@ import Layout from "../../layouts/Layout.astro";
 
   <script>
     import { createAuthTrpc } from "../../utils/trpc";
-
-    // general stuff
-    const authTrpc = createAuthTrpc();
-
-    // subs stuff
-    const openSubsModal = document.getElementById(
-      "openSubsModal",
-    ) as HTMLButtonElement;
-    const subsModal = document.getElementById("subsModal") as HTMLDialogElement;
-    const closeSubsModal = document.getElementById(
-      "closeSubsModal",
-    ) as HTMLButtonElement;
-    const submitSubs = document.getElementById(
-      "subsModal",
-    ) as HTMLButtonElement;
-    const languageChoiceSubs = document.getElementById(
-      "languageChoiceSubs",
-    ) as HTMLSelectElement;
-    const AudioBookChoice = document.getElementById(
-      "AudioBookChoice",
-    ) as HTMLSelectElement;
-
-    //Book stuff
-    const openBookModal = document.getElementById(
-      "openBookModal",
-    ) as HTMLButtonElement;
-    const closeBookModal = document.getElementById(
-      "closeBookModal",
-    ) as HTMLButtonElement;
-    const bookModal = document.getElementById("bookModal") as HTMLDialogElement;
-    const bookDropZone = document.getElementById(
-      "bookDropZone",
-    ) as HTMLDivElement;
-    const submitBook = document.getElementById(
-      "submitBook",
-    ) as HTMLButtonElement;
-    const bookName = document.getElementById("bookName") as HTMLInputElement;
-    const bookAuthor = document.getElementById(
-      "bookAuthor",
-    ) as HTMLInputElement;
-    const bookThumbnailDropZone = document.getElementById(
-      "bookThumbnailDropZone",
-    ) as HTMLDivElement;
-    const genres = document.getElementById("genres") as HTMLSelectElement;
-    const bookPrice = document.getElementById("bookPrice") as HTMLInputElement;
-
-    let bookFileUploaded: null | File = null;
-    let bookThumbnailUploaded: null | File = null;
-
-    //audio Book stuff
-    const languageChoice = document.getElementById(
-      "languageChoice",
-    ) as HTMLSelectElement;
-    const audiobookLoBo = document.getElementById(
-      "audiobookLoBo",
-    ) as HTMLSelectElement;
-    const audiobookDropZone = document.getElementById(
-      "audiobookDropZone",
-    ) as HTMLDivElement;
-    const audioSubsDropzone = document.getElementById(
-      "audioSubsDropzone",
-    ) as HTMLDivElement;
-    const submitAudiobook = document.getElementById(
-      "submitAudiobook",
-    ) as HTMLButtonElement;
-    const audiobookAuthor = document.getElementById(
-      "audiobookAuthor",
-    ) as HTMLInputElement;
-    const openAudiobookModal = document.getElementById(
-      "openAudiobookModal",
-    ) as HTMLButtonElement;
-    const audiobookModal = document.getElementById(
-      "audiobookModal",
-    ) as HTMLDialogElement;
-    const closeAudiobookModal = document.getElementById(
-      "closeAudiobookModal",
-    ) as HTMLButtonElement;
-    let audiobookAudioUploaded: null | File = null;
-    let audibookSubsUploaded: File | null = null;
+    const trpc = createAuthTrpc()!;
 
     // stream stuff
     const openStreamModal = document.getElementById(
@@ -195,40 +117,6 @@ import Layout from "../../layouts/Layout.astro";
       "tagsSelect",
     ) as HTMLSelectElement;
 
-    openSubsModal.onclick = () => {
-      subsModal.open = !subsModal.open;
-    };
-    closeSubsModal.onclick = () => {
-      subsModal.close();
-    };
-
-    submitSubs.onclick = async () => {
-      if (!audibookSubsUploaded) {
-        console.log("audibookSubsUploaded null");
-        return;
-      }
-
-      const selectedAudioId = AudioBookChoice.selectedOptions[0].value;
-      const language = languageChoiceSubs.selectedOptions[0].value as
-        | "ENGLISH"
-        | "SPANISH";
-      const url = await authTrpc!.subs.saveNewSubs.mutate({
-        audiobookId: selectedAudioId,
-        subsLanguage: language,
-      });
-
-      const b = await fetch(url.subsUrl, {
-        body: audibookSubsUploaded,
-        method: "PUT",
-        headers: {
-          "Content-Type": audibookSubsUploaded!.type,
-          "Content-Disposition": `attachment; filename="${audibookSubsUploaded!.name}"`,
-        },
-      });
-
-      console.log(b);
-    };
-
     submitStream.onclick = async (e) => {
       e.preventDefault();
       try {
@@ -237,7 +125,7 @@ import Layout from "../../layouts/Layout.astro";
           tagIds.push(tagsSelect.selectedOptions[i].value);
         }
         console.log(tagIds);
-        const a = await authTrpc?.video.createNewVideo.mutate({
+        const a = await trpc.video.createNewVideo.mutate({
           id: streamId.value,
           tagIds: tagIds,
         });
@@ -256,241 +144,15 @@ import Layout from "../../layouts/Layout.astro";
     };
 
     // audio book stuff
-    openAudiobookModal.onclick = () => {
-      audiobookModal.open = !audiobookModal.open;
-    };
-    closeAudiobookModal.onclick = () => {
-      audiobookModal.close();
-    };
-
-    // This is for the book itslef
-    submitBook.onclick = async () => {
-      try {
-        let loGenre: string[] = [];
-
-        for (let i = 0; i < genres.selectedOptions.length; i++) {
-          loGenre.push(genres.selectedOptions[i].value);
-        }
-        const price = parseFloat(bookPrice.value);
-        const urls = await authTrpc!.book.saveBook.mutate({
-          name: bookName.value,
-          author: bookAuthor.value,
-          genre: loGenre,
-          price: price,
-        });
-
-        console.log(urls);
-        const a = await fetch(urls.contentUrl, {
-          body: bookFileUploaded,
-          method: "PUT",
-          headers: {
-            "Content-Type": bookFileUploaded!.type,
-            "Content-Disposition": `attachment; filename="${bookFileUploaded!.name}"`,
-          },
-        });
-
-        const b = await fetch(urls.thumbnailUrl, {
-          body: bookThumbnailUploaded,
-          method: "PUT",
-          headers: {
-            "Content-Type": bookThumbnailUploaded!.type,
-            "Content-Disposition": `attachment; filename="${bookThumbnailUploaded!.name}"`,
-          },
-        });
-
-        console.log(a);
-        console.log(b);
-      } catch (error) {
-        console.log(`Error in admin/upload: ${error}`);
-      }
-    };
-
-    openBookModal.onclick = () => {
-      bookModal.open = !bookModal.open;
-    };
-    bookModal.onclick = (event) => {
-      if (event.target === bookModal) {
-        bookModal.close();
-      }
-    };
-
-    closeBookModal.onclick = () => {
-      bookModal.open = false;
-    };
-    const toBase64 = (file: File) =>
-      new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
-      });
-
-    bookThumbnailDropZone.ondrop = async (e) => {
-      e.preventDefault();
-      if (!e.dataTransfer) {
-        console.log("no data tranfers");
-        return;
-      }
-
-      if (e.dataTransfer.items.length === 0) {
-        console.log("no files");
-      }
-
-      const file = e.dataTransfer.items[0].getAsFile()!;
-      const seg = file.name.split(".");
-      const ext = seg[seg.length - 1];
-
-      bookThumbnailDropZone.textContent = seg[0];
-      bookThumbnailUploaded = file;
-    };
-
-    bookThumbnailDropZone.ondragover = (e) => {
-      e.preventDefault();
-    };
-
-    bookDropZone.ondrop = async (e) => {
-      e.preventDefault();
-      if (!e.dataTransfer) {
-        console.log("no data tranfers");
-        return;
-      }
-
-      if (e.dataTransfer.items.length === 0) {
-        console.log("no files");
-      }
-
-      const file = e.dataTransfer.items[0].getAsFile()!;
-      const seg = file.name.split(".");
-      const ext = seg[seg.length - 1];
-      if (ext !== "txt") {
-        console.log("file is not type mp4");
-        return;
-      }
-
-      bookDropZone.textContent = seg[0];
-
-      bookFileUploaded = file;
-    };
-
-    bookDropZone.ondragover = (e) => {
-      e.preventDefault();
-    };
-
-    // this is for the audio books
-    let books: {
-      id: string;
-      name: string;
-      author: string;
-    }[] = [];
-
-    audioSubsDropzone.ondrop = (e) => {
-      e.preventDefault();
-      if (!e.dataTransfer) {
-        console.log("no data tranfers");
-        return;
-      }
-
-      if (e.dataTransfer.items.length === 0) {
-        console.log("no files");
-      }
-
-      const file = e.dataTransfer.items[0].getAsFile()!;
-      const seg = file.name.split(".");
-      const ext = seg[seg.length - 1];
-
-      audibookSubsUploaded = file;
-      audioSubsDropzone.textContent = seg[0];
-    };
-
-    audioSubsDropzone.ondragover = (e) => {
-      e.preventDefault();
-    };
-
-    audiobookDropZone.ondrop = (e) => {
-      e.preventDefault();
-      if (!e.dataTransfer) {
-        console.log("no data tranfers");
-        return;
-      }
-
-      if (e.dataTransfer.items.length === 0) {
-        console.log("no files");
-      }
-
-      const file = e.dataTransfer.items[0].getAsFile()!;
-      const seg = file.name.split(".");
-      const ext = seg[seg.length - 1];
-
-      audiobookAudioUploaded = file;
-      audiobookDropZone.textContent = seg[0];
-    };
-
-    audiobookDropZone.ondragover = (e) => {
-      e.preventDefault();
-    };
-
-    submitAudiobook.onclick = async (e) => {
-      e.preventDefault();
-      const bookid = audiobookLoBo.options[audiobookLoBo.selectedIndex].value;
-
-      const selectedLanguage = languageChoice.selectedOptions[0].value;
-      console.log(selectedLanguage);
-
-      const urls = await authTrpc!.audiobook.createAudiobook.mutate({
-        author: audiobookAuthor.value,
-        bookId: bookid,
-        language: selectedLanguage as "ENGLISH" | "SPANISH",
-      });
-      const b = await fetch(urls.audioUrl, {
-        body: audiobookAudioUploaded,
-        method: "PUT",
-        headers: {
-          "Content-Type": audiobookAudioUploaded!.type,
-          "Content-Disposition": `attachment; filename="${audiobookAudioUploaded!.name}"`,
-        },
-      });
-      console.log(b);
-    };
-
     const main = async () => {
       try {
-        const isAuth = await authTrpc!.auth.authorizedAdmin.query();
+        const isAuth = await trpc.auth.authorizedAdmin.query();
         if (!isAuth) {
           console.log(isAuth);
           //window.location.replace("/");
         }
 
-        const bookWithAudio =
-          await authTrpc!.book.getAllBooksWithAudioBooks.query();
-
-        bookWithAudio.forEach((b) => {
-          b.audioBooks.forEach((ab) => {
-            const options = document.createElement("option");
-            options.textContent = `B Name: ${b.name} AB Author: ${ab.author} - Lang: ${ab.language}`;
-            options.value = ab.id;
-            AudioBookChoice.appendChild(options);
-          });
-
-          /* AudioBookChoice */
-        });
-
-        const loGenre = await authTrpc!.genre.getGenres.query();
-        loGenre.forEach((genre) => {
-          const el = document.createElement("option");
-          el.value = genre.id;
-          el.textContent = genre.name;
-          genres.appendChild(el);
-        });
-
-        books = await authTrpc!.book.getLoBo.query();
-        books.forEach((b) => {
-          const el = document.createElement("option");
-          el.value = b.id;
-          el.textContent = b.name;
-          audiobookLoBo.appendChild(el);
-        });
-
-        const tags = await authTrpc!.tags.getTags.query();
+        const tags = await trpc.tags.getTags.query();
 
         tags.forEach((t) => {
           const option = document.createElement("option");

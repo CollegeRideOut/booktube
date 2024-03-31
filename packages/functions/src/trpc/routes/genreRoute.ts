@@ -4,6 +4,7 @@ import { genreRepo } from '../repo/genreRepo';
 import { z } from 'zod';
 
 export const genreRoute = router({
+
   getGLoLoBo: clientProcedure.query(async (opts) => {
     try {
       const genres = await genreRepo.getGLoLoBo();
@@ -15,9 +16,8 @@ export const genreRoute = router({
           id: string;
           name: string;
           author: string;
-          content: string;
-          thumbnail: string | null;
-          price: number | null;
+          rating: number;
+          thumbnailLong: string;
         }[];
       }[] = [];
 
@@ -26,10 +26,10 @@ export const genreRoute = router({
           return gl.id === g.generes.id;
         });
         if (found) {
-          g.books.thumbnail = `https://${Bucket.bookBucket.bucketName}.s3.amazonaws.com/${g.books.thumbnail}`;
+          g.books.thumbnailLong = `https://${Bucket.bookBucket.bucketName}.s3.amazonaws.com/${g.books.thumbnailLong}`;
           found.books.push(g.books);
         } else {
-          g.books.thumbnail = `https://${Bucket.bookBucket.bucketName}.s3.amazonaws.com/${g.books.thumbnail}`;
+          g.books.thumbnailLong = `https://${Bucket.bookBucket.bucketName}.s3.amazonaws.com/${g.books.thumbnailLong}`;
           genresSet.push({
             id: g.generes.id,
             name: g.generes.name,
@@ -59,7 +59,7 @@ export const genreRoute = router({
       const id = opts.input;
       const books = await genreRepo.getBooksUnderGenre(id);
       books.forEach((b) => {
-        b.thumbnail = `https://${Bucket.bookBucket.bucketName}.s3.amazonaws.com/${b.thumbnail}`;
+        b.thumbnailLong = `https://${Bucket.bookBucket.bucketName}.s3.amazonaws.com/${b.thumbnailLong}`;
       });
 
       return books;

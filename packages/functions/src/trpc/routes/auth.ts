@@ -85,7 +85,7 @@ export const authRouter = router({
       }
     }),
 
-  authorizedClient: clientProcedure.query((opts) => {
+  authorizedClient: clientProcedure.mutation((opts) => {
     try {
       const [_, token] = opts.ctx.event.headers.authorization!.split(' ');
       jwt.verify(token, Config.JWT_SECRET);

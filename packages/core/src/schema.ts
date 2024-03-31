@@ -11,9 +11,11 @@ import {
   boolean,
   int,
   text,
+  mediumint,
 } from 'drizzle-orm/mysql-core';
 import { relations } from 'drizzle-orm';
 import 'dotenv';
+import { integer } from 'drizzle-orm/pg-core';
 
 export const roles = mysqlEnum('roles', ['ADMIN', 'CLIENT']);
 export const languages = mysqlEnum('languages', ['ENGLISH', 'SPANISH']);
@@ -39,11 +41,15 @@ export const books = mysqlTable('books', {
   name: varchar('name', { length: 256 }).notNull(),
   author: varchar('author', { length: 256 }).notNull(),
   summary: text('summary').notNull().default(''),
-  thumbnail: varchar('thumbnail', { length: 256 }).notNull(),
+  thumbnailSquare: varchar('thumbnailSquare', { length: 256 }).notNull(),
+  thumbnailLong: varchar('thumbnailLong', { length: 256 }).notNull(),
+  bookDurationInSeconds: float('bookDurationInSeconds').notNull(),
   price: float('price').notNull(),
+  numberOfChapters: int('numberOfChapters').notNull(),
   rating: float('rating').notNull().default(5),
   createdAt: timestamp('createdAt', { mode: 'string' }).defaultNow(),
   updatedAt: timestamp('updatedAt', { mode: 'string' }).onUpdateNow(),
+  favourite: boolean('favourite').notNull().default(false)
 });
 
 export const review = mysqlTable('review', {
@@ -53,6 +59,8 @@ export const review = mysqlTable('review', {
   title: varchar('title', { length: 256 }).notNull(),
   text: text('author').notNull(),
   rating: int('rating'),
+  createdAt: timestamp('createdAt', { mode: 'string' }).defaultNow(),
+  updatedAt: timestamp('updatedAt', { mode: 'string' }).onUpdateNow(),
 });
 
 export const reviewRelations = relations(review, ({ one }) => ({
@@ -69,9 +77,11 @@ export const reviewRelations = relations(review, ({ one }) => ({
 
 export const chapters = mysqlTable('chapters', {
   id: varchar('id', { length: 256 }).unique().primaryKey().notNull(),
-  bookId: varchar('id', { length: 256 }).notNull(),
+  bookId: varchar('bookId', { length: 256 }).notNull(),
   name: varchar('name', { length: 256 }).notNull(),
   number: int('number').notNull(),
+  createdAt: timestamp('createdAt', { mode: 'string' }).defaultNow(),
+  updatedAt: timestamp('updatedAt', { mode: 'string' }).onUpdateNow(),
 });
 
 export const booksRelations = relations(books, ({ many }) => ({
@@ -87,6 +97,7 @@ export const chapterRelations = relations(chapters, ({ many, one }) => ({
     fields: [chapters.bookId],
     references: [books.id],
   }),
+  chapterProgressList: many(chapterProgress),
 }));
 
 export const library = mysqlTable('library', {
@@ -94,7 +105,38 @@ export const library = mysqlTable('library', {
   bookId: varchar('bookId', { length: 256 }).notNull(),
   userId: varchar('userId', { length: 256 }).notNull(),
   favourite: boolean('favourite').notNull().default(false),
+  lastChapterProgessId: varchar('lastChapterProgessId', { length: 256 }),
+  rating: float('rating'),
+  ratingTitle: text('ratingTitle'),
+  ratingDescription: text('ratingDescription'),
+  createdAt: timestamp('createdAt', { mode: 'string' }).defaultNow(),
+  updatedAt: timestamp('updatedAt', { mode: 'string' }).onUpdateNow(),
 });
+
+export const chapterProgress = mysqlTable('chapterProgress', {
+  id: varchar('id', { length: 256 }).notNull().unique().primaryKey(),
+  librayId: varchar('librayId', { length: 256 }).notNull(),
+  chapterId: varchar('chapterId', { length: 256 }).notNull(),
+  lastSecondListend: mediumint('lastSecondListend').notNull().default(0),
+  subsId: varchar('subsId', { length: 256 }),
+  audiobookId: varchar('audiobookId', { length: 256 }), 
+  createdAt: timestamp('createdAt', { mode: 'string' }).defaultNow(),
+  updatedAt: timestamp('updatedAt', { mode: 'string' }).onUpdateNow(),
+});
+
+export const chapterProgressRelation = relations(
+  chapterProgress,
+  ({ one }) => ({
+    library: one(library, {
+      fields: [chapterProgress.librayId],
+      references: [library.id],
+    }),
+    chapter: one(chapters, {
+      fields: [chapterProgress.chapterId],
+      references: [chapters.id],
+    }),
+  }),
+);
 
 export const generes = mysqlTable('generes', {
   id: varchar('id', { length: 256 }).unique().notNull().primaryKey(),
@@ -104,7 +146,9 @@ export const generes = mysqlTable('generes', {
 export const generesBooks = mysqlTable('generesBooks', {
   id: varchar('id', { length: 256 }).unique().notNull().primaryKey(),
   bookId: varchar('bookId', { length: 256 }).notNull(),
-  genereId: varchar('genereId', { length: 256 }).notNull(),
+  genereId: varchar('genereId', { length: 256 }).notNull(), 
+  createdAt: timestamp('createdAt', { mode: 'string' }).defaultNow(),
+  updatedAt: timestamp('updatedAt', { mode: 'string' }).onUpdateNow(),
 });
 
 export const genereBooksRelations = relations(generesBooks, ({ one }) => ({
@@ -128,13 +172,13 @@ export const libraryRelations = relations(library, ({ one, many }) => ({
     fields: [library.userId],
     references: [users.id],
   }),
+  chapterProgressList: many(chapterProgress),
 }));
 
 export const audiobooks = mysqlTable('audiobooks', {
   id: varchar('id', { length: 256 }).unique().primaryKey().notNull(),
   author: varchar('author', { length: 256 }).notNull(),
-  audio: varchar('audio', { length: 256 }).notNull(),
-  chapterId: varchar('bookid', { length: 256 }).notNull(),
+  chapterId: varchar('chapterId', { length: 256 }).notNull(),
   language: languages.notNull(),
   createdAt: timestamp('createdAt', { mode: 'string' }).defaultNow(),
   updatedAt: timestamp('updatedAt', { mode: 'string' }).onUpdateNow(),
@@ -144,6 +188,8 @@ export const audiobookSubs = mysqlTable('audiobookSubs', {
   id: varchar('id', { length: 256 }).unique().primaryKey().notNull(),
   audiobookId: varchar('audiobookId', { length: 256 }).notNull(),
   language: languages.notNull(),
+  createdAt: timestamp('createdAt', { mode: 'string' }).defaultNow(),
+  updatedAt: timestamp('updatedAt', { mode: 'string' }).onUpdateNow(),
 });
 
 export const audiobooksRelations = relations(audiobooks, ({ one, many }) => ({
@@ -178,11 +224,16 @@ export const likedVideos = mysqlTable('likedVideos', {
   id: varchar('id', { length: 256 }).primaryKey().unique().notNull(),
   videoId: varchar('videoId', { length: 256 }).notNull(),
   userId: varchar('userId', { length: 256 }).notNull(),
+  createdAt: timestamp('createdAt', { mode: 'string' }).defaultNow(),
+  updatedAt: timestamp('updatedAt', { mode: 'string' }).onUpdateNow(),
+
 });
 
 export const tags = mysqlTable('tags', {
   id: varchar('id', { length: 256 }).primaryKey().unique().notNull(),
   name: varchar('name', { length: 256 }).notNull(),
+  createdAt: timestamp('createdAt', { mode: 'string' }).defaultNow(),
+  updatedAt: timestamp('updatedAt', { mode: 'string' }).onUpdateNow(),
 });
 
 export const tagsRelations = relations(tags, ({ many }) => ({
@@ -193,6 +244,8 @@ export const videoTags = mysqlTable('videoTags', {
   id: varchar('id', { length: 256 }).primaryKey().unique().notNull(),
   tagId: varchar('tagId', { length: 256 }).notNull(),
   videoId: varchar('videoId', { length: 256 }).notNull(),
+  createdAt: timestamp('createdAt', { mode: 'string' }).defaultNow(),
+  updatedAt: timestamp('updatedAt', { mode: 'string' }).onUpdateNow(),
 });
 
 export const videoTagsRelations = relations(videoTags, ({ one }) => ({

@@ -13,94 +13,213 @@ import Stripe from 'stripe';
 import { library } from '@booktube/core/schema';
 import { KeyObject } from 'crypto';
 import { genreRepo } from '../repo/genreRepo';
+import { chapterRepo } from '../repo/chapterRepo';
+import { subsRepo } from '../repo/subsRepo';
 
 const stripe = new Stripe(Config.STRIPE_SECRET);
 
-const routerName = 'clientRoutes';
+const routerName = 'bookRoutes';
 
 export const bookRouter = router({
   //client based routes
-
-  saveBook: adminProcedure
+  //
+  createBook: adminProcedure
     .input(
       z.object({
-        name: z.string(),
+        genres: z.array(z.string()),
+        title: z.string(),
+        summary: z.string(),
         author: z.string(),
-        genre: z.array(z.string()),
         price: z.number(),
+        bookDurationInSeconds: z.number(),
+        chapters: z.array(
+          z.object({
+            name: z.string(),
+            number: z.number(),
+            audiobooks: z.array(
+              z.object({
+                author: z.string(),
+                language: z.string(),
+                audioFile: z.string(),
+                subs: z.array(
+                  z.object({
+                    language: z.string(),
+                    subsFile: z.string(),
+                  }),
+                ),
+              }),
+            ),
+          }),
+        ),
       }),
     )
     .mutation(async (opts) => {
       try {
         const bookInfo = opts.input;
-        const idToUse = v4();
-        const pathToContent = `${idToUse}_Content`;
-        const pathToThumbnail = `${idToUse}_Thumbnail`;
 
+        const idToUse = v4();
+        const pathToThumbnailSquare = `${idToUse}_ThumbnailSquare`;
+        const pathToThumbnailLong = `${idToUse}_ThumbnailLong`;
         await bookrepo.createBook({
           id: idToUse,
           author: bookInfo.author,
-          name: bookInfo.name,
-          content: pathToContent,
-          thumbnail: pathToThumbnail,
+          name: bookInfo.title,
+          summary: bookInfo.summary,
+          thumbnailSquare: pathToThumbnailSquare,
+          thumbnailLong: pathToThumbnailLong,
+          numberOfChapters: bookInfo.chapters.length,
+          bookDurationInSeconds: bookInfo.bookDurationInSeconds,
           price: bookInfo.price,
         });
 
-        await genreRepo.addGenresToBook(idToUse, bookInfo.genre);
+        await genreRepo.addGenresToBook(idToUse, bookInfo.genres);
 
-        const putContent = new PutObjectCommand({
-          Key: pathToContent,
+        const putThumbnailSquare = new PutObjectCommand({
+          Key: pathToThumbnailSquare,
           ACL: 'public-read',
           Bucket: Bucket.bookBucket.bucketName,
         });
 
-        const putThumbnail = new PutObjectCommand({
-          Key: pathToThumbnail,
+        const putThumbnailLong = new PutObjectCommand({
+          Key: pathToThumbnailLong,
           ACL: 'public-read',
           Bucket: Bucket.bookBucket.bucketName,
         });
 
-        const urlConent = await getSignedUrl(new S3Client({}), putContent);
-        const urlThumbnail = await getSignedUrl(new S3Client({}), putThumbnail);
+        const urlThumbnailSqure = await getSignedUrl(
+          new S3Client({}),
+          putThumbnailSquare,
+        );
+        const urlThumbnailLong = await getSignedUrl(
+          new S3Client({}),
+          putThumbnailLong,
+        );
+
+        const chaptersToInsert: {
+          id: string;
+          bookId: string;
+          name: string;
+          number: number;
+        }[] = [];
+
+        const audiobookstoInser: {
+          id: string;
+          author: string;
+          chapterId: string;
+          language: 'ENGLISH' | 'SPANISH';
+        }[] = [];
+
+        const subsToInsert: {
+          id: string;
+          audiobookId: string;
+          language: 'ENGLISH' | 'SPANISH';
+        }[] = [];
+
+        const subsUrlToSend: { mapValue: string; id: string }[] = [];
+        const audioUrlToSend: { mapValue: string; id: string }[] = [];
+
+        for (let chapterBook of bookInfo.chapters) {
+          let chapterId = v4();
+          let { audiobooks, ...cInfo } = { ...chapterBook };
+
+          chaptersToInsert.push({ id: chapterId, ...cInfo, bookId: idToUse });
+
+          for (let chapterAudioBook of chapterBook.audiobooks) {
+            let audioBookId = v4();
+            let { subs, audioFile, ...aInfo } = { ...chapterAudioBook };
+            audiobookstoInser.push({
+              language: aInfo.language as 'ENGLISH' | 'SPANISH',
+              author: aInfo.author,
+              chapterId: chapterId,
+              id: audioBookId,
+            });
+
+            audioUrlToSend.push({ mapValue: audioFile, id: audioBookId });
+            for (let chapterAudioSubs of chapterAudioBook.subs) {
+              const subsId = v4();
+              const { subsFile, ...subInfo } = { ...chapterAudioSubs };
+              subsToInsert.push({
+                language: subInfo.language as 'ENGLISH' | 'SPANISH',
+                audiobookId: audioBookId,
+                id: subsId,
+              });
+              subsUrlToSend.push({ mapValue: subsFile, id: subsId });
+            }
+          }
+        }
+
+        await chapterRepo.createChapters(chaptersToInsert);
+        await audiobookRepo.createAudiobooks(audiobookstoInser);
+        await subsRepo.createNewSub(subsToInsert);
+
+        const subsUrlSending: { url: string; key: string }[] = [];
+        const audioUrlSending: { url: string; key: string }[] = [];
+
+        for (let subsKey of subsUrlToSend) {
+          const putSubs = new PutObjectCommand({
+            Key: subsKey.id,
+            ACL: 'public-read',
+            Bucket: Bucket.bookBucket.bucketName,
+          });
+
+          const putSubsUrl = await getSignedUrl(new S3Client({}), putSubs);
+          subsUrlSending.push({ url: putSubsUrl, key: subsKey.mapValue });
+        }
+
+        for (let audioKey of audioUrlToSend) {
+          const putAudio = new PutObjectCommand({
+            Key: audioKey.id,
+            ACL: 'public-read',
+            Bucket: Bucket.bookBucket.bucketName,
+          });
+
+          const putAudioUrl = await getSignedUrl(new S3Client({}), putAudio);
+          audioUrlSending.push({ url: putAudioUrl, key: audioKey.mapValue });
+        }
 
         return {
-          id: idToUse,
-          contentUrl: urlConent,
-          thumbnailUrl: urlThumbnail,
+          thumbnailSquareUrl: urlThumbnailSqure,
+          thumbnailLongUrl: urlThumbnailLong,
+          subsUrl: subsUrlSending,
+          audioUrl: audioUrlSending,
         };
       } catch (error) {
-        console.log(error);
         throw error;
       }
     }),
 
-  getLoLoBo: clientProcedure.query(async (opts) => {
-    try {
-      const booksT = await bookrepo.getBooks();
-      const books = booksT.map((book) => {
-        book.thumbnail = `https://${Bucket.bookBucket.bucketName}.s3.amazonaws.com/${book.thumbnail}`;
-        return book;
-      });
-      return [{ genre: 'test', books }];
-    } catch (error) {
-      console.log(error);
-      throw error;
-    }
-  }),
+  getSimilarBooks: clientProcedure
+    .input(z.string().uuid())
+    .query(async (opts) => {
+      try {
+        const id = opts.input;
 
-  getLoBo: clientProcedure.query(async () => {
-    try {
-      return await bookrepo.getBooks();
-    } catch (error) {
-      console.log(`Error in bookroute getLobo ${error}`);
-      throw error;
-    }
-  }),
+        const books = await bookrepo.getBookByIdWithGenre(id);
+        if (books.length === 0) {
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: 'books length = 0',
+          });
+        }
+        const genres = books.map((b) => {
+          return b.generes.id;
+        });
+
+        const smiliarBooks = await bookrepo.getSimilarBooks(genres);
+
+        smiliarBooks.forEach((b) => {
+          b.thumbnailLong = `https://${Bucket.bookBucket.bucketName}.s3.amazonaws.com/${b.thumbnailLong}`;
+        });
+        return smiliarBooks;
+      } catch (error) {
+        throw error;
+      }
+    }),
 
   getBook: clientProcedure.input(z.string()).query(async (opts) => {
     try {
       const id = opts.input;
-      const books = await bookrepo.getBookById(id);
+      const books = await bookrepo.getBookByIdWithGenre(id);
       if (books.length === 0) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
@@ -108,7 +227,7 @@ export const bookRouter = router({
         });
       }
 
-      const book = books[0];
+      const book = books[0].books;
       if (book.id !== id) {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
@@ -122,16 +241,37 @@ export const bookRouter = router({
     }
   }),
 
+  getFeaturedBook: clientProcedure.query(async (opts) => {
+    try {
+      const books = await bookrepo.getFeaturedBook();
+      if (books.length === 0) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'books length is 0',
+        });
+      }
+
+      const book = books[0];
+      book.thumbnailSquare = `https://${Bucket.bookBucket.bucketName}.s3.amazonaws.com/${book.thumbnailSquare}`;
+      return book;
+    } catch (error) {
+      throw error;
+    }
+  }),
+
   getBookInfo: clientProcedure.input(z.string()).query(async (opts) => {
     try {
       const id = opts.input;
-      const books = await bookrepo.getBookById(id);
+      const books = await bookrepo.getBookByIdWithGenre(id);
       if (books.length === 0) {
         throw new Error('books length === 0');
       }
 
-      const book = books[0];
-      book.thumbnail = `https://${Bucket.bookBucket.bucketName}.s3.amazonaws.com/${book.thumbnail}`;
+      const book = books[0].books;
+
+      const reviews = await libraryRepo.getUserReviews(book.id);
+
+      book.thumbnailSquare = `https://${Bucket.bookBucket.bucketName}.s3.amazonaws.com/${book.thumbnailSquare}`;
 
       const libBooks = await libraryRepo.checkIfUserOwnsBook(
         opts.ctx.user!.id,
@@ -140,7 +280,13 @@ export const bookRouter = router({
       let owned = false;
 
       if (libBooks.length === 0) {
-        return { ...book, owned };
+        return {
+          ...book,
+          reviews,
+          owned,
+          librayId: '',
+          genre: books[0].generes,
+        };
       }
 
       const libBook = libBooks[0];
@@ -153,15 +299,21 @@ export const bookRouter = router({
         return {
           ...book,
           owned,
-          like: libBook.like,
-          superLike: libBook.superLike,
-          dislike: libBook.dislike,
+          reviews,
+          genre: books[0].generes,
+          librayId: libBook.id,
         };
       }
 
-      return { ...book, owned };
+      return {
+        ...book,
+        owned,
+        reviews,
+        genre: books[0].generes,
+        librayId: '',
+      };
     } catch (error) {
-      console.log('error in the bookRoute/getBookInfo, error');
+      console.log('error in the bookRoute/getBookInfo,', error);
       throw error;
     }
   }),
@@ -176,12 +328,12 @@ export const bookRouter = router({
       try {
         const input = opts.input;
 
-        const books = await bookrepo.getBookById(input.bookId);
+        const books = await bookrepo.getBookByIdWithGenre(input.bookId);
 
         if (books.length === 0) {
           throw new Error(`books length  === 0`);
         }
-        const book = books[0];
+        const book = books[0].books;
 
         const paymentIntent = await stripe.paymentIntents.create({
           automatic_payment_methods: { enabled: true },
@@ -200,54 +352,12 @@ export const bookRouter = router({
       }
     }),
 
-  getAllBooksWithAudioBooks: adminProcedure.query(async () => {
-    try {
-      const books = await bookrepo.getBooksWithAudios();
-      const sortedBooks: {
-        id: string;
-        name: string;
-        audioBooks: {
-          id: string;
-          createdAt: string | null;
-          updatedAt: string | null;
-          bookId: string;
-          author: string;
-          audio: string;
-          language: 'ENGLISH' | 'SPANISH';
-        }[];
-      }[] = [];
-
-      books.forEach((b) => {
-        const found = sortedBooks.find((sb) => {
-          return sb.id === b.books.id;
-        });
-
-        if (found) {
-          found.audioBooks.push(b.audiobooks);
-        } else {
-          sortedBooks.push({
-            id: b.books.id,
-            name: b.books.name,
-            audioBooks: [b.audiobooks],
-          });
-        }
-      });
-
-      return sortedBooks;
-    } catch (error) {
-      console.log(
-        `There was an error in the bookRoute getAllBooksWithAudioBooks ${error}`,
-      );
-      throw error;
-    }
-  }),
-
   fuzzySearchByName: clientProcedure.input(z.string()).query(async (opts) => {
     try {
       const nameTerm = opts.input;
       const books = await bookrepo.fuzzySearchByName(nameTerm);
       books.forEach((b) => {
-        b.thumbnail = `https://${Bucket.bookBucket.bucketName}.s3.amazonaws.com/${b.thumbnail}`;
+        b.thumbnailLong = `https://${Bucket.bookBucket.bucketName}.s3.amazonaws.com/${b.thumbnailLong}`;
       });
 
       return books;

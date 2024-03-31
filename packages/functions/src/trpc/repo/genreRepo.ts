@@ -7,6 +7,10 @@ import { v4 } from 'uuid';
 const repoName = 'bookRepo';
 
 export const genreRepo = {
+  async getSimilarBooks(id: string) {
+    /* const a = await db.select().from(schema.genres). */
+  },
+
   async getGLoLoBo() {
     return await db
       .select({
@@ -18,9 +22,8 @@ export const genreRepo = {
           id: schema.books.id,
           name: schema.books.name,
           author: schema.books.author,
-          content: schema.books.content,
-          thumbnail: schema.books.thumbnail,
-          price: schema.books.price,
+          thumbnailLong: schema.books.thumbnailLong,
+          rating: schema.books.rating,
         },
       })
       .from(schema.generes)
@@ -42,7 +45,8 @@ export const genreRepo = {
         name: schema.books.name,
         author: schema.books.author,
         price: schema.books.price,
-        thumbnail: schema.books.thumbnail,
+        thumbnailLong: schema.books.thumbnailLong,
+        rating: schema.books.rating,
       })
       .from(schema.generesBooks)
       .where(eq(schema.generesBooks.genereId, id))

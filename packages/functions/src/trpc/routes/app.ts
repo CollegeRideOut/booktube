@@ -8,6 +8,8 @@ import { libraryRoute } from './libraryRoute';
 import { genreRoute } from './genreRoute';
 import { subsRoute } from './subsRoute';
 import { tagRoute } from './tagRoute';
+import { chapterProgressRoute } from './chapterProgressRoute';
+import { chapterRoute } from './chapterRoute';
 
 export const appRouter = router({
   auth: authRouter,
@@ -19,4 +21,6 @@ export const appRouter = router({
   genre: genreRoute,
   subs: subsRoute,
   tags: tagRoute,
-} );
+  chapterProgress: chapterProgressRoute,
+  chapter: chapterRoute,
+});

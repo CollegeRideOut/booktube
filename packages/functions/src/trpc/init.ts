@@ -26,6 +26,7 @@ export const router = t.router;
 export const procedure = t.procedure;
 
 export const clientProcedure = t.procedure.use(async (opts) => {
+  console.log(1)
   if (!opts.ctx.event.headers.authorization) {
     throw new TRPCError({
       code: 'UNAUTHORIZED',
@@ -34,9 +35,29 @@ export const clientProcedure = t.procedure.use(async (opts) => {
   }
 
   try {
+
+  console.log(2)
     const [_, token] = opts.ctx.event.headers.authorization.split(' ');
+    if (!token) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: 'user not authorized for this procdeure',
+        });
+    }
+    
+  console.log(3)
     const id = jwt.decode(token) as any;
+    if (!id) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: 'user not authorized for this procdeure',
+        });
+    }
+
+  console.log(4)
     if (!id || !id.id || !(id.id satisfies string)) {
+
+  console.log(5)
       if (!opts.ctx.event.headers.authorization) {
         throw new TRPCError({
           code: 'UNAUTHORIZED',
@@ -44,6 +65,8 @@ export const clientProcedure = t.procedure.use(async (opts) => {
         });
       }
     }
+    
+  console.log(6)
 
     const u = await userRepo.getUserById(id.id);
     if (u.length === 0) {
@@ -52,6 +75,8 @@ export const clientProcedure = t.procedure.use(async (opts) => {
         message: 'Internal server error',
       });
     }
+
+  console.log(7)
     const user = u[0];
 
     if (u[0].id !== id.id) {
@@ -61,6 +86,8 @@ export const clientProcedure = t.procedure.use(async (opts) => {
       });
     }
 
+    
+  console.log(8)
     opts.ctx.user = user;
 
     return opts.next();

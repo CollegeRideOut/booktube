@@ -8,26 +8,38 @@ import { Bucket } from 'sst/node/bucket';
 const repoName = 'audiobooksRepo';
 
 export const audiobookRepo = {
-  async createAudiobook(audiobookInfo: {
-    id: string;
-    author: string;
-    audio: string;
-    bookId: string;
-    language: 'ENGLISH' | 'SPANISH';
-  }) {
+  // new shit
+  async createAudiobooks(
+    audiobookInfo: {
+      id: string;
+      author: string;
+      chapterId: string;
+      language: 'ENGLISH' | 'SPANISH';
+    }[],
+  ) {
     try {
-      await db.insert(schema.audiobooks).values({
-        id: audiobookInfo.id,
-        author: audiobookInfo.author,
-        bookId: audiobookInfo.bookId,
-        audio: audiobookInfo.audio,
-        language: audiobookInfo.language,
-      });
+      await db.insert(schema.audiobooks).values(audiobookInfo);
     } catch (error) {
-      console.log(`Error in ${repoName} - ${this.createAudiobook.name}`, error);
+      console.log(
+        `Error in ${repoName} - ${this.createAudiobooks.name}`,
+        error,
+      );
       throw error;
     }
   },
+
+  async getChapterAudiobooksWithSubs(chapterId: string) {
+    return db
+      .select()
+      .from(schema.audiobooks)
+      .where(eq(schema.audiobooks.chapterId, chapterId))
+      .innerJoin(
+        schema.audiobookSubs,
+        eq(schema.audiobookSubs.audiobookId, schema.audiobooks.id),
+      );
+  },
+
+  //old shit
 
   async getAudiobooksByBookWithSubs(bookId: string) {
     try {

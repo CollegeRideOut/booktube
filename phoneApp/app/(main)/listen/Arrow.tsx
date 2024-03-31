@@ -99,7 +99,7 @@ export const Arrow: React.FC<{
         style={[arrowContainerUpStyle, { width: '100%', height: 50 }]}
       >
         <Animated.Image
-          source={require('../../assets/arrow-up.png')}
+          source={require('../../../assets/arrow-up.png')}
           resizeMode='center'
           style={[arrowStyle, { height: '100%' }]}
         />
@@ -108,7 +108,7 @@ export const Arrow: React.FC<{
         style={[arrowContainerDownStyle, { width: '100%', height: 50 }]}
       >
         <Animated.Image
-          source={require('../../assets/arrow-up.png')}
+          source={require('../../../assets/arrow-up.png')}
           resizeMode='center'
           style={[arrowStyle, { height: '100%' }]}
         />

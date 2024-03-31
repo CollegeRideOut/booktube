@@ -8,14 +8,12 @@ const repoName = 'subsRepo';
 
 export const subsRepo = {
   async createNewSub(
-    id: string,
-    audioBookId: string,
-    language: 'ENGLISH' | 'SPANISH',
+    info: {
+      id: string;
+      audiobookId: string;
+      language: 'ENGLISH' | 'SPANISH';
+    }[],
   ) {
-    await db.insert(schema.audiobookSubs).values({
-      id: id,
-      audiobookId: audioBookId,
-      language: language,
-    });
+    await db.insert(schema.audiobookSubs).values(info);
   },
 };

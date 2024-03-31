@@ -11,7 +11,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 /**
  * A set of typesafe hooks for consuming your API.
  */
-export const api = createTRPCReact<AppRouter>();
+
+export const context = React.createContext<QueryClient | undefined>(undefined);
+export const api = createTRPCReact<AppRouter>({ context: context });
 
 export function TRPCProvider(props: { children: React.ReactNode }) {
   const [queryClient] = React.useState(() => new QueryClient());
@@ -21,6 +23,9 @@ export function TRPCProvider(props: { children: React.ReactNode }) {
       links: [
         httpBatchLink({
           url: `${process.env.EXPO_PUBLIC_API_URL}/trpc`,
+          headers() {
+            return {};
+          },
         }),
       ],
     }),
@@ -46,7 +51,6 @@ export function AuthTRPCProvider(props: {
       links: [
         httpBatchLink({
           url: `${process.env.EXPO_PUBLIC_API_URL}/trpc`,
-
           headers() {
             return {
               authorization: `Bearer ${props.token}`,
