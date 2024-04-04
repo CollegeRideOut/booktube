@@ -1,16 +1,30 @@
-import { Stack, useRouter } from 'expo-router';
+import { Stack, useGlobalSearchParams, useRouter } from 'expo-router';
 
 import { api } from '../../../../util/trpc';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
-import { Dimensions, Pressable, Text, TextInput, View } from 'react-native';
+import { Dimensions, TouchableOpacity, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 
-export default function EditType() {
-  const userInfoQuery = api.user.userInfo.useQuery();
-  const navigation = useRouter();
+export default function UpdateInfo() {
+  const [oldPpassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const updatePasswordMutation = api.user.updatePassword.useMutation()
+  const utils = api.useUtils()
+  const navigation = useRouter()
 
+  const saveChanges = async () => {
+    try {
+      const ok = await updatePasswordMutation.mutateAsync({ oldPassword: oldPpassword, newPassword: newPassword, confirmPassword: confirmPassword })
+      await utils.user.userInfo.prefetch()
+      navigation.back()
+
+    } catch (error) {
+
+    }
+  }
   return (
     <SafeAreaView
       style={{
@@ -26,28 +40,37 @@ export default function EditType() {
           flexDirection: 'column',
           flex: 1,
           padding: '5%',
-          rowGap: 20,
+          rowGap: 30,
           width: '100%',
         }}
       >
         {/* header */}
 
-        <View
-          style={{
-            width: '100%',
-            alignItems: 'center',
-          }}
+        <TouchableOpacity
+          style={{ height: 24, width: '100%', flexDirection: 'row', alignItems: 'center' }}
+          onPress={() => { navigation.back() }}
         >
+          <Image
+            source={require('../../../../assets/Back_Icon.png')}
+            style={{
+              width: 12,
+              height: 24,
+            }}
+          />
+
           <Text
             style={{
               fontSize: 24,
+              marginLeft: 20,
+              lineHeight: 24,
               color: 'white',
               fontFamily: 'Inter-600',
             }}
           >
-            Profile
+            Edit password
           </Text>
-        </View>
+
+        </TouchableOpacity>
 
         {/* order hist link */}
         {/* singout button */}
@@ -57,19 +80,9 @@ export default function EditType() {
         <View
           style={{
             width: '100%',
-            rowGap: 20,
+            rowGap: 30,
           }}
         >
-          <Text
-            style={{
-              fontFamily: 'Inter-600',
-              fontSize: 18,
-              color: 'white',
-            }}
-          >
-            Personal Info
-          </Text>
-
           <View
             style={{
               width: '100%',
@@ -77,51 +90,7 @@ export default function EditType() {
               rowGap: 20,
             }}
           >
-            <View
-              style={{
-                width: '100%',
-                rowGap: 10,
-              }}
-            >
-              <Text
-                style={{
-                  fontFamily: 'Inter',
-                  fontSize: 14,
-                  color: '#A9A9A9',
-                }}
-              >
-                Full name
-              </Text>
 
-              <View
-                style={{
-                  width: '100%',
-                  height: 45,
-                  borderWidth: 1,
-                  borderColor: '#484848',
-                  borderRadius: 5,
-                  paddingLeft: '5%',
-                  alignItems: 'center',
-                  flexDirection: 'row',
-                  columnGap: 20,
-                }}
-              >
-                <Image
-                  source={require('../../../../assets/UserProfile_Icon.png')}
-                  style={{ width: 14, height: 16 }}
-                />
-                <Text
-                  style={{
-                    color: '#F8F8F8',
-                    top: 1,
-                    fontFamily: 'Inter',
-                    fontSize: 16,
-                  }}
-                >
-                  {userInfoQuery.data?.name}
-                </Text>
-              </View>
-            </View>
 
             <View
               style={{
@@ -136,7 +105,7 @@ export default function EditType() {
                   color: '#A9A9A9',
                 }}
               >
-                Email
+                Old password
               </Text>
 
               <View
@@ -144,34 +113,34 @@ export default function EditType() {
                   width: '100%',
                   height: 45,
                   borderWidth: 1,
-                  borderColor: '#484848',
+                  borderColor: '#303030',
                   borderRadius: 5,
-                  paddingLeft: '5%',
                   alignItems: 'center',
                   flexDirection: 'row',
                   columnGap: 20,
                 }}
               >
-                <Image
-                  source={require('../../../../assets/Email_Icon.png')}
-                  style={{ width: 17, height: 12 }}
-                />
-                <Text
+                <TextInput
                   style={{
-                    color: '#F8F8F8',
-                    fontFamily: 'Inter',
-                    fontSize: 16,
+                    color: 'white',
+                    width: '100%',
+                    paddingLeft: '5%',
+                    backgroundColor: '#303030',
+                    borderRadius: 5,
+                    fontWeight: 'bold',
+                    height: 45,
+                    fontFamily: 'Inter-Bold',
                   }}
-                >
-                  {userInfoQuery.data?.email}
-                </Text>
+                  value={oldPpassword}
+                  onChangeText={(t) => { setOldPassword(t) }}
+                />
               </View>
             </View>
+
 
             <View
               style={{
                 width: '100%',
-
                 rowGap: 10,
               }}
             >
@@ -182,7 +151,7 @@ export default function EditType() {
                   color: '#A9A9A9',
                 }}
               >
-                Password
+                New password
               </Text>
 
               <View
@@ -190,30 +159,81 @@ export default function EditType() {
                   width: '100%',
                   height: 45,
                   borderWidth: 1,
-                  borderColor: '#484848',
+                  borderColor: '#303030',
                   borderRadius: 5,
-                  paddingLeft: '5%',
                   alignItems: 'center',
                   flexDirection: 'row',
                   columnGap: 20,
                 }}
               >
-                <Image
-                  source={require('../../../../assets/Password_Icon.png')}
-                  style={{ width: 12, height: 16 }}
-                />
-                <Text
+                <TextInput
                   style={{
-                    color: '#F8F8F8',
-                    fontFamily: 'Inter',
-                    top: 3,
-                    fontSize: 16,
+                    color: 'white',
+                    width: '100%',
+                    paddingLeft: '5%',
+                    backgroundColor: '#303030',
+                    borderRadius: 5,
+                    fontWeight: 'bold',
+                    height: 45,
+                    fontFamily: 'Inter-Bold',
                   }}
-                >
-                  *****************
-                </Text>
+                  value={newPassword}
+                  onChangeText={(t) => { setNewPassword(t) }}
+                />
               </View>
             </View>
+
+
+
+            <View
+              style={{
+                width: '100%',
+                rowGap: 10,
+              }}
+            >
+              <Text
+                style={{
+                  fontFamily: 'Inter',
+                  fontSize: 14,
+                  color: '#A9A9A9',
+                }}
+              >
+                Confirm password
+              </Text>
+
+              <View
+                style={{
+                  width: '100%',
+                  height: 45,
+                  borderWidth: 1,
+                  borderColor: '#303030',
+                  borderRadius: 5,
+                  alignItems: 'center',
+                  flexDirection: 'row',
+                  columnGap: 20,
+                }}
+              >
+                <TextInput
+                  style={{
+                    color: 'white',
+                    width: '100%',
+                    paddingLeft: '5%',
+                    backgroundColor: '#303030',
+                    borderRadius: 5,
+                    fontWeight: 'bold',
+                    height: 45,
+                    fontFamily: 'Inter-Bold',
+                  }}
+                  value={confirmPassword}
+                  onChangeText={(t) => { setConfirmPassword(t) }}
+                />
+              </View>
+            </View>
+
+
+
+
+
           </View>
         </View>
 
@@ -225,7 +245,7 @@ export default function EditType() {
             rowGap: 15,
           }}
         >
-          <Pressable
+          <TouchableOpacity
             style={{
               backgroundColor: 'white',
               width: '100%',
@@ -236,7 +256,8 @@ export default function EditType() {
               justifyContent: 'center',
             }}
             onPress={() => {
-              navigation.push('/(main)/(tabs)/profile/oderHistory');
+              saveChanges()
+
             }}
           >
             <Text
@@ -247,37 +268,9 @@ export default function EditType() {
                 fontSize: 16,
               }}
             >
-              Order History
+              Save Changes
             </Text>
-          </Pressable>
-          <Pressable
-            style={{
-              backgroundColor: '#222222',
-              width: '100%',
-              height: 41,
-              display: 'flex',
-              alignItems: 'center',
-              borderRadius: 5,
-              justifyContent: 'center',
-              borderWidth: 1,
-              borderColor: '#5C5C5C',
-            }}
-            onPress={() => {
-              navigation.push('/(app)/login');
-            }}
-          >
-            <Text
-              style={{
-                fontWeight: 'bold',
-                textTransform: 'uppercase',
-                fontFamily: 'Inter-Bold',
-                fontSize: 16,
-                color: 'white',
-              }}
-            >
-              Sign out
-            </Text>
-          </Pressable>
+          </TouchableOpacity>
         </View>
       </View>
     </SafeAreaView>

@@ -119,7 +119,7 @@ export const chapterProgress = mysqlTable('chapterProgress', {
   chapterId: varchar('chapterId', { length: 256 }).notNull(),
   lastSecondListend: mediumint('lastSecondListend').notNull().default(0),
   subsId: varchar('subsId', { length: 256 }),
-  audiobookId: varchar('audiobookId', { length: 256 }), 
+  audiobookId: varchar('audiobookId', { length: 256 }),
   createdAt: timestamp('createdAt', { mode: 'string' }).defaultNow(),
   updatedAt: timestamp('updatedAt', { mode: 'string' }).onUpdateNow(),
 });
@@ -146,7 +146,7 @@ export const generes = mysqlTable('generes', {
 export const generesBooks = mysqlTable('generesBooks', {
   id: varchar('id', { length: 256 }).unique().notNull().primaryKey(),
   bookId: varchar('bookId', { length: 256 }).notNull(),
-  genereId: varchar('genereId', { length: 256 }).notNull(), 
+  genereId: varchar('genereId', { length: 256 }).notNull(),
   createdAt: timestamp('createdAt', { mode: 'string' }).defaultNow(),
   updatedAt: timestamp('updatedAt', { mode: 'string' }).onUpdateNow(),
 });
@@ -178,6 +178,7 @@ export const libraryRelations = relations(library, ({ one, many }) => ({
 export const audiobooks = mysqlTable('audiobooks', {
   id: varchar('id', { length: 256 }).unique().primaryKey().notNull(),
   author: varchar('author', { length: 256 }).notNull(),
+  fileType: varchar('fileType', { length: 256 }).notNull().default('mp3'),
   chapterId: varchar('chapterId', { length: 256 }).notNull(),
   language: languages.notNull(),
   createdAt: timestamp('createdAt', { mode: 'string' }).defaultNow(),
@@ -187,6 +188,7 @@ export const audiobooks = mysqlTable('audiobooks', {
 export const audiobookSubs = mysqlTable('audiobookSubs', {
   id: varchar('id', { length: 256 }).unique().primaryKey().notNull(),
   audiobookId: varchar('audiobookId', { length: 256 }).notNull(),
+  fileType: varchar('fileType', { length: 256 }).notNull().default('json'),
   language: languages.notNull(),
   createdAt: timestamp('createdAt', { mode: 'string' }).defaultNow(),
   updatedAt: timestamp('updatedAt', { mode: 'string' }).onUpdateNow(),
@@ -211,6 +213,7 @@ export const audiobookSubsRelations = relations(audiobookSubs, ({ one }) => ({
 export const videos = mysqlTable('videos', {
   id: varchar('id', { length: 256 }).primaryKey().unique().notNull(),
   path: varchar('path', { length: 256 }).notNull(),
+  fileType: varchar('fileType', { length: 256 }).notNull().default('m3u8'),
   createdAt: timestamp('createdAt', { mode: 'string' }).defaultNow(),
   updatedAt: timestamp('updatedAt', { mode: 'string' }).onUpdateNow(),
 });

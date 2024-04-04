@@ -12,9 +12,9 @@ import {
   Button,
   Dimensions,
   FlatList,
-  Pressable,
   ScrollView,
   Text,
+  TouchableOpacity,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -376,23 +376,23 @@ export default function ListenToBook() {
             width: Dimensions.get('window').width,
           }}
         >
-          <Pressable
+          <TouchableOpacity
             onPress={() => {
               handlePresentModalPress();
             }}
           >
             <Text style={{ color: 'white' }}> choose chapter</Text>
-          </Pressable>
-          <Pressable>
+          </TouchableOpacity>
+          <TouchableOpacity>
             <View>
               <Image
                 source={require('../../../assets/Back30s.png')}
                 style={{ height: 54, width: 54 }}
               />
             </View>
-          </Pressable>
+          </TouchableOpacity>
 
-          <Pressable
+          <TouchableOpacity
             onPress={async () => {
               if (isPlaying) {
                 await audioStream.sound.pauseAsync();
@@ -410,16 +410,16 @@ export default function ListenToBook() {
                 style={{ height: 54, width: 54 }}
               />
             </View>
-          </Pressable>
+          </TouchableOpacity>
 
-          <Pressable>
+          <TouchableOpacity>
             <View>
               <Image
                 source={require('../../../assets/Forward30s.png')}
                 style={{ height: 54, width: 54 }}
               />
             </View>
-          </Pressable>
+          </TouchableOpacity>
         </View>
       )}
 
@@ -453,7 +453,7 @@ export default function ListenToBook() {
               <View>
                 {initialInfo.data.chapters.map((c) => {
                   return (
-                    <Pressable
+                    <TouchableOpacity
                       key={c.id}
                       onPress={() => {
                         updateCurrentInfo(c.id);
@@ -462,7 +462,7 @@ export default function ListenToBook() {
                       <Text>
                         # {c.number}: {c.name}
                       </Text>
-                    </Pressable>
+                    </TouchableOpacity>
                   );
                 })}
               </View>

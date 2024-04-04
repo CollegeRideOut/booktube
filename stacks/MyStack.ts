@@ -6,6 +6,8 @@ import {
   Config,
   Bucket,
 } from 'sst/constructs';
+import * as cloudfront from "aws-cdk-lib/aws-cloudfront";
+import * as cloudfrontOrigins from "aws-cdk-lib/aws-cloudfront-origins";
 
 export function API({ stack }: StackContext) {
   const JWT_SECRET = new Config.Secret(stack, 'JWT_SECRET');
@@ -21,6 +23,19 @@ export function API({ stack }: StackContext) {
   const videoBucket = new Bucket(stack, 'videoBucket');
   const bookBucket = new Bucket(stack, 'bookBucket');
 
+  const videoDist = new cloudfront.Distribution(stack, "videoDist", {
+    defaultBehavior: {
+      origin: new cloudfrontOrigins.S3Origin(videoBucket.cdk.bucket),
+    },
+  });
+
+  const bookDist = new cloudfront.Distribution(stack, "bookDist", {
+    defaultBehavior: {
+      origin: new cloudfrontOrigins.S3Origin(bookBucket.cdk.bucket),
+    },
+  });
+
+
   const api = new Api(stack, 'api', {
     defaults: {
       function: {
@@ -35,7 +50,10 @@ export function API({ stack }: StackContext) {
           DATABASE_HOST,
           STRIPE_KEY,
           STRIPE_SECRET,
-        ],
+        ], environment: {
+          'VIDEO_DISTRIBUTION_DOMAIN': videoDist.domainName,
+          'BOOK_DISTRIBUTION_DOMAIN': bookDist.domainName,
+        }
       },
     },
 

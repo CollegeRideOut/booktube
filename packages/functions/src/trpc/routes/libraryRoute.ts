@@ -16,7 +16,7 @@ export const libraryRoute = router({
       const library = await libraryRepo.getUserLibrary(userId);
 
       library.forEach((lib) => {
-        lib.book.thumbnailLong = `https://${Bucket.bookBucket.bucketName}.s3.amazonaws.com/${lib.book.thumbnailLong}`;
+        lib.book.thumbnailLong = `http://${process.env.BOOK_DISTRIBUTION_DOMAIN}/${lib.book.thumbnailLong}`;
       });
       return library;
     } catch (error) {
@@ -25,13 +25,31 @@ export const libraryRoute = router({
     }
   }),
 
+  searchLibrary: clientProcedure.input(z.string()).mutation(async (opts) => {
+    const searchTerm = opts.input
+    const userId = opts.ctx.user!.id;
+    try {
+      const library = await libraryRepo.searchLibrary(searchTerm, userId);
+      library.forEach((lib) => {
+        lib.book.thumbnailLong = `http://${process.env.BOOK_DISTRIBUTION_DOMAIN}/${lib.book.thumbnailLong}`;
+      });
+
+      return library
+    } catch (error) {
+      console.log(`error in library route search library ${error}`);
+      throw error;
+    }
+
+  }),
+
+
   getLibraryOrderHistory: clientProcedure.query(async (opts) => {
     const userId = opts.ctx.user!.id;
     try {
       const library = await libraryRepo.getUserLibraryOrderHistory(userId);
 
       library.forEach((lib) => {
-        lib.book.thumbnailLong = `https://${Bucket.bookBucket.bucketName}.s3.amazonaws.com/${lib.book.thumbnailLong}`;
+        lib.book.thumbnailLong = `http://${process.env.BOOK_DISTRIBUTION_DOMAIN}/${lib.book.thumbnailLong}`;
       });
       return library;
     } catch (error) {
@@ -212,19 +230,19 @@ export const libraryRoute = router({
           if (found) {
             found.subs.push({
               ...ab.audiobookSubs,
-              path: `https://${Bucket.bookBucket.bucketName}.s3.amazonaws.com/${ab.audiobookSubs.id}`,
+              path: `http://${process.env.BOOK_DISTRIBUTION_DOMAIN}/${ab.audiobookSubs.id}`,
             });
           } else {
             audiobooks.push({
               id: ab.audiobooks.id,
               author: ab.audiobooks.author,
 
-              path: `https://${Bucket.bookBucket.bucketName}.s3.amazonaws.com/${ab.audiobooks.id}`,
+              path: `http://${process.env.BOOK_DISTRIBUTION_DOMAIN}/${ab.audiobooks.id}`,
               language: ab.audiobooks.language,
               subs: [
                 {
                   ...ab.audiobookSubs,
-                  path: `https://${Bucket.bookBucket.bucketName}.s3.amazonaws.com/${ab.audiobookSubs.id}`,
+                  path: `http://${process.env.BOOK_DISTRIBUTION_DOMAIN}/${ab.audiobookSubs.id}`,
                 },
               ],
             });

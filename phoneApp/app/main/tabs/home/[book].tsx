@@ -1,33 +1,45 @@
 import {
   Alert,
   ScrollView,
-  Pressable,
+  TouchableOpacity,
   Text,
   View,
   Dimensions,
   FlatList,
 } from 'react-native';
 import { StarRatingDisplay } from 'react-native-star-rating-widget';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { api } from '../../../../util/trpc';
-import { useEffect } from 'react';
 import { Image } from 'expo-image';
 import { useGlobalSearchParams, useRouter } from 'expo-router';
 import { useStripe } from '@stripe/stripe-react-native';
-import { useRefreshOnFocus } from '../../../../util/useFocusRefetch';
+import { useFocusNotifyOnChangeProps } from '../../../../util/stopRerender';
+import { useEffect } from 'react';
 
 export default function BookInfo() {
-  const bookId = useGlobalSearchParams();
+  const { book, routeName } = useGlobalSearchParams();
   const navigation = useRouter();
-  const bookInfo = api.book.getBookInfo.useQuery(bookId.book as string);
-  const similarBooks = api.book.getSimilarBooks.useQuery(bookId.book as string);
+  const notiffy = useFocusNotifyOnChangeProps() as any
+
+  const bookInfo = api.book.getBookInfo.useQuery(book as string, { enabled: false });
+  const similarBooks = api.book.getSimilarBooks.useQuery(book as string, { enabled: false });
+
+
+  useEffect(() => {
+    bookInfo.refetch()
+    similarBooks.refetch()
+    console.log('i ran ')
+  }, [])
+
+
+
+
   const generatePaymentIntent = api.book.generatePaymentIntent.useMutation();
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
 
   async function checkout() {
     try {
       const clientSecret = await generatePaymentIntent.mutateAsync({
-        bookId: bookId.book as string,
+        bookId: book as string,
       });
       if (clientSecret.clientSecret === null) {
         Alert.alert('something went wrong');
@@ -168,7 +180,7 @@ export default function BookInfo() {
                     flexDirection: 'row',
                   }}
                 >
-                  <Pressable
+                  <TouchableOpacity
                     onPress={() => {
                       console.log('i got pressed');
                       navigation.push({
@@ -188,9 +200,9 @@ export default function BookInfo() {
                     }}
                   >
                     <Text style={{ color: 'black', fontSize: 16 }}>Play</Text>
-                  </Pressable>
+                  </TouchableOpacity>
 
-                  <Pressable
+                  <TouchableOpacity
                     onPress={() => { }}
                     style={{
                       width: 110,
@@ -209,7 +221,7 @@ export default function BookInfo() {
                     <Text style={{ color: '#DBDBDB', fontSize: 16 }}>
                       In library
                     </Text>
-                  </Pressable>
+                  </TouchableOpacity>
                 </View>
               ) : (
                 <View
@@ -218,7 +230,7 @@ export default function BookInfo() {
                     flexDirection: 'row',
                   }}
                 >
-                  <Pressable
+                  <TouchableOpacity
                     onPress={() => {
                       console.log('i got pressed');
                       navigation.push({
@@ -238,9 +250,9 @@ export default function BookInfo() {
                     }}
                   >
                     <Text style={{ color: 'black', fontSize: 16 }}>Sample</Text>
-                  </Pressable>
+                  </TouchableOpacity>
 
-                  <Pressable
+                  <TouchableOpacity
                     onPress={() => {
                       checkout();
                     }}
@@ -259,7 +271,7 @@ export default function BookInfo() {
                     }}
                   >
                     <Text style={{ color: '#DBDBDB', fontSize: 16 }}>Buy</Text>
-                  </Pressable>
+                  </TouchableOpacity>
                 </View>
               )}
             </View>
@@ -397,11 +409,11 @@ export default function BookInfo() {
                     marginTop: 10,
                   }}
                 >
-                  <Pressable
+                  <TouchableOpacity
                     key={b.id}
                     onPress={() => {
                       navigation.push({
-                        pathname: '/(tabs)/home/[book]',
+                        pathname: '/main/tabs/home/[book]',
                         params: { book: [b.id] },
                       });
                     }}
@@ -461,7 +473,7 @@ export default function BookInfo() {
                         </View>
                       </View>
                     </View>
-                  </Pressable>
+                  </TouchableOpacity>
                 </View>
               );
             }}
@@ -495,10 +507,10 @@ export default function BookInfo() {
 
           {bookInfo.data.owned && (
             <View>
-              <Pressable
+              <TouchableOpacity
                 onPress={() => {
                   navigation.push({
-                    pathname: '(tabs)/review/[review]',
+                    pathname: `/main/tabs/${routeName as string}/review/[libraryId]/`,
                     params: {
                       librayId: bookInfo.data.librayId,
                       name: bookInfo.data.name,
@@ -525,7 +537,7 @@ export default function BookInfo() {
                   starSize={15}
                   enableHalfStar
                 />
-              </Pressable>
+              </TouchableOpacity>
 
               {bookInfo.data.reviews.map((r) => {
                 return (

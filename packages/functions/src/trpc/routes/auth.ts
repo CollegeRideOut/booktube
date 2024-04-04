@@ -87,6 +87,8 @@ export const authRouter = router({
 
   authorizedClient: clientProcedure.mutation((opts) => {
     try {
+      console.log('heere first')
+      console.log('this is the domain name: ', process.env.VIDEO_DISTRIBUTION_DOMAIN)
       const [_, token] = opts.ctx.event.headers.authorization!.split(' ');
       jwt.verify(token, Config.JWT_SECRET);
       return true;

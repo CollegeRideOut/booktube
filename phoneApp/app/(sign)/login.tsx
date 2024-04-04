@@ -1,7 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import {
   Dimensions,
-  Pressable,
   StyleSheet,
   Text,
   TextInput,
@@ -11,9 +10,13 @@ import {
 import { Link, router, useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
-import { TRPCProvider } from '../../util/trpc';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { api } from '../../util/trpc';
+
+import { SplashScreen } from "expo-router";
+
+//SplashScreen.preventAutoHideAsync();
+
 
 export default function Login() {
   const navigation = useRouter();
@@ -21,17 +24,7 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const loginMutate = api.auth.login.useMutation({
-    onSuccess: async (data) => {
-      const t = await AsyncStorage.getItem('token');
-      await AsyncStorage.setItem('token', data.token);
-
-      navigation.push('/(tabs)/home/');
-    },
-    onError: (error) => {
-      console.log('there was a error', error);
-    },
-  });
+  const loginMutate = api.auth.login.useMutation();
 
   return (
     <SafeAreaView
@@ -124,7 +117,7 @@ export default function Login() {
           </View>
 
           <View style={{ width: '100%', rowGap: 10 }}>
-            <Pressable
+            <TouchableOpacity
               style={{
                 backgroundColor: 'white',
                 width: '100%',
@@ -142,8 +135,8 @@ export default function Login() {
                   });
 
                   await AsyncStorage.setItem('token', token.token);
-                  navigation.push('/(main)/(tabs)/home');
-                } catch (error) {}
+                  navigation.push('/main/tabs/home')
+                } catch (error) { console.log(error) }
               }}
             >
               <Text
@@ -155,11 +148,11 @@ export default function Login() {
               >
                 Sign in
               </Text>
-            </Pressable>
+            </TouchableOpacity>
           </View>
         </View>
 
-        <Pressable
+        <TouchableOpacity
           style={{
             width: '100%',
             alignItems: 'center',
@@ -183,17 +176,8 @@ export default function Login() {
               Register
             </Text>
           </Text>
-        </Pressable>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});

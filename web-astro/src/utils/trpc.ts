@@ -26,6 +26,7 @@ export function createAuthTrpc() {
         httpBatchLink({
           url: `${import.meta.env.PUBLIC_API_URL}/trpc`,
           // You can pass any HTTP headers you wish here
+
           headers: () => {
             return {
               Authorization: `Bearer ${token}`,
@@ -34,9 +35,5 @@ export function createAuthTrpc() {
         }),
       ],
     });
-
-    return authTrpc;
-  } else {
-    return authTrpc;
   }
 }

@@ -45,19 +45,19 @@ export const chapterRoute = router({
         if (found) {
           found.subs.push({
             ...ab.audiobookSubs,
-            path: `https://${Bucket.bookBucket.bucketName}.s3.amazonaws.com/${ab.audiobookSubs.id}`,
+            path: `http://${process.env.BOOK_DISTRIBUTION_DOMAIN}/${ab.audiobookSubs.id}`,
           });
         } else {
           audiobooks.push({
             id: ab.audiobooks.id,
             author: ab.audiobooks.author,
 
-            path: `https://${Bucket.bookBucket.bucketName}.s3.amazonaws.com/${ab.audiobooks.id}`,
+            path: `http://${process.env.BOOK_DISTRIBUTION_DOMAIN}/${ab.audiobooks.id}`,
             language: ab.audiobooks.language,
             subs: [
               {
                 ...ab.audiobookSubs,
-                path: `https://${Bucket.bookBucket.bucketName}.s3.amazonaws.com/${ab.audiobookSubs.id}`,
+                path: `http://${process.env.BOOK_DISTRIBUTION_DOMAIN}/${ab.audiobookSubs.id}`,
               },
             ],
           });

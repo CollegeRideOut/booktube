@@ -5,6 +5,9 @@ import { Dimensions, Pressable, Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Image } from 'expo-image';
+
+import { SplashScreen } from "expo-router";
 
 enum authorizationState {
   WAITING = 0,
@@ -20,6 +23,13 @@ export default function ListenLayout() {
     authorizationState.WAITING,
   );
 
+
+
+  useEffect(() => {
+    if (authorized !== authorizationState.WAITING) {
+
+    }
+  }, [authorized])
   useEffect(() => {
     const checkingIfAuthorized = async () => {
       const isAuth = await authorizedMuattion.mutateAsync();
@@ -38,8 +48,14 @@ export default function ListenLayout() {
     navigation.push('/(app)/');
   } else if (authorized === authorizationState.WAITING) {
     return (
-      <View>
-        <Text>TAB LAYOUT LOADING</Text>
+      <View style={{
+        width: Dimensions.get('window').width,
+        height: Dimensions.get('window').height,
+        backgroundColor: '#202020',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
       </View>
     );
   } else if (authorized === authorizationState.AUTHRORIZED) {

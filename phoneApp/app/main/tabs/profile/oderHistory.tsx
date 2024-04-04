@@ -9,14 +9,15 @@ import {
   Pressable,
   Text,
   TextInput,
+  TouchableOpacity,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 
 export default function UpdateInfo() {
-  const { name, email } = useGlobalSearchParams();
   const libraryInfo = api.library.getLibraryOrderHistory.useQuery();
+  const navigation = useRouter()
 
   return (
     <SafeAreaView
@@ -32,46 +33,34 @@ export default function UpdateInfo() {
           flexDirection: 'column',
           flex: 1,
           padding: '5%',
-          rowGap: 20,
+          rowGap: 30,
           width: '100%',
         }}
       >
-        <View
-          style={{
-            flexDirection: 'row',
-            width: '100%',
-            alignItems: 'center',
-          }}
+        <TouchableOpacity
+          style={{ height: 24, width: '100%', flexDirection: 'row', alignItems: 'center' }}
+          onPress={() => { navigation.back() }}
         >
           <Image
             source={require('../../../../assets/Back_Icon.png')}
             style={{
-              width: 11.81,
-              top: 3,
-              position: 'absolute',
-              height: 20,
+              width: 12,
+              height: 24,
             }}
           />
-          <View
-            style={{
-              width: '100%',
-              flexDirection: 'row',
 
-              alignItems: 'center',
-              justifyContent: 'center',
+          <Text
+            style={{
+              fontSize: 24,
+              marginLeft: 20,
+              lineHeight: 24,
+              color: 'white',
+              fontFamily: 'Inter-600',
             }}
           >
-            <Text
-              style={{
-                fontSize: 24,
-                color: 'white',
-                fontFamily: 'Inter-600',
-              }}
-            >
-              Order History
-            </Text>
-          </View>
-        </View>
+            Order History
+          </Text>
+        </TouchableOpacity>
 
         {libraryInfo.data && (
           <FlatList

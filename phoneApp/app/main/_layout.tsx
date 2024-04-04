@@ -5,6 +5,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 import { Dimensions, Pressable, Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { Image } from 'expo-image';
+import { StripeProvider } from '@stripe/stripe-react-native';
+
+import { SplashScreen } from "expo-router";
+//SplashScreen.preventAutoHideAsync()
 
 export default function MainLayout() {
   const navigation = useRouter();
@@ -24,8 +29,21 @@ export default function MainLayout() {
 
   if (token === false) {
     return (
-      <View>
-        <Text>Loadin MAIN</Text>
+      <View style={{
+        width: Dimensions.get('window').width,
+        height: Dimensions.get('window').height,
+        backgroundColor: '#202020',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <Image
+          source={require('../../assets/logo.png')}
+          style={{
+            width: 36,
+            height: 36,
+          }}
+        />
       </View>
     );
   } else if (token === null) {
@@ -33,7 +51,10 @@ export default function MainLayout() {
   } else if (token !== '')
     return (
       <AuthTRPCProvider token={token}>
-        <Slot />
+
+        <StripeProvider publishableKey={process.env.EXPO_PUBLIC_STRIPE_KEY!}>
+          <Slot />
+        </StripeProvider>
       </AuthTRPCProvider>
     );
 }

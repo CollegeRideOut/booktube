@@ -1,6 +1,7 @@
 import {
   Dimensions,
-  Pressable,
+  FlatList,
+  TouchableOpacity,
   ScrollView,
   Text,
   TextInput,
@@ -30,7 +31,7 @@ export default function DiscoverGenreId() {
         flex: 1,
       }}
     >
-      <ScrollView
+      <View
         style={{
           backgroundColor: '#202020',
           display: 'flex',
@@ -131,103 +132,111 @@ export default function DiscoverGenreId() {
           {/* main content */}
           <View
             style={{
-              rowGap: 30,
-              flexDirection: 'row',
-              flexWrap: 'wrap',
-              columnGap: 30,
+              flex: 1
             }}
           >
             {books.data &&
-              books.data.map((b) => {
-                return (
-                  <View
-                    key={b.id}
-                    style={{
-                      width: 150,
-                      height: 261,
-                      marginBottom: 20,
-                      marginTop: 10,
-                    }}
-                  >
-                    <Pressable
-                      style={{}}
+              <FlatList data={books.data} style={{
+
+                rowGap: 30,
+                flexDirection: 'column',
+                height: '100%',
+                flexWrap: 'wrap',
+                columnGap: 30,
+              }} keyExtractor={(b) => b.id}
+                renderItem={({ item: b }) => {
+                  return (
+
+                    <View
                       key={b.id}
-                      onPress={() => {
-                        navigation.push({
-                          pathname: '/(tabs)/home/[book]',
-                          params: { book: b.id },
-                        });
+                      style={{
+                        width: 150,
+                        height: 261,
+                        marginBottom: 20,
+                        marginTop: 10,
                       }}
                     >
-                      <View style={{}}>
-                        <View>
-                          <Image
-                            source={b.thumbnailLong!}
-                            alt='hello why is not working'
-                            style={{
-                              borderTopLeftRadius: 8,
-                              borderTopRightRadius: 8,
-                              width: 150,
-                              height: 218,
-                            }}
-                          />
-                        </View>
-                        <View
-                          style={{
-                            width: 150,
-                            padding: '5%',
-                            borderBottomLeftRadius: 8,
-                            borderBottomRightRadius: 8,
-                            backgroundColor: '#3B3B3B',
-                          }}
-                        >
-                          <View style={{ rowGap: 5 }}>
-                            <Text
-                              ellipsizeMode='tail'
-                              numberOfLines={1}
+                      <TouchableOpacity
+                        style={{}}
+                        key={b.id}
+                        onPress={() => {
+                          navigation.push({
+                            pathname: '/main/tabs/home/[book]',
+                            params: { book: b.id },
+                          });
+                        }}
+                      >
+                        <View style={{}}>
+                          <View>
+                            <Image
+                              source={b.thumbnailLong!}
+                              alt='hello why is not working'
                               style={{
-                                color: 'white',
-                                fontWeight: 'bold',
-                                flexWrap: 'nowrap',
-                                fontSize: 14,
+                                borderTopLeftRadius: 8,
+                                borderTopRightRadius: 8,
+                                width: 150,
+                                height: 218,
                               }}
-                            >
-                              {b.name}
-                            </Text>
-
-                            <StarRatingDisplay
-                              rating={b.rating}
-                              style={{ margin: 0, padding: 0 }}
-                              color='#FFCA0E'
-                              starStyle={{
-                                margin: 0,
-                                padding: 0,
-                                marginHorizontal: 0,
-                              }}
-                              maxStars={5}
-                              starSize={15}
-                              enableHalfStar
                             />
+                          </View>
+                          <View
+                            style={{
+                              width: 150,
+                              padding: '5%',
+                              borderBottomLeftRadius: 8,
+                              borderBottomRightRadius: 8,
+                              backgroundColor: '#3B3B3B',
+                            }}
+                          >
+                            <View style={{ rowGap: 5 }}>
+                              <Text
+                                ellipsizeMode='tail'
+                                numberOfLines={1}
+                                style={{
+                                  color: 'white',
+                                  fontWeight: 'bold',
+                                  flexWrap: 'nowrap',
+                                  fontSize: 14,
+                                }}
+                              >
+                                {b.name}
+                              </Text>
 
-                            <Text
-                              ellipsizeMode='tail'
-                              numberOfLines={1}
-                              style={{
-                                color: '#D9D9D9',
-                              }}
-                            >
-                              {b.author}
-                            </Text>
+                              <StarRatingDisplay
+                                rating={b.rating}
+                                style={{ margin: 0, padding: 0 }}
+                                color='#FFCA0E'
+                                starStyle={{
+                                  margin: 0,
+                                  padding: 0,
+                                  marginHorizontal: 0,
+                                }}
+                                maxStars={5}
+                                starSize={15}
+                                enableHalfStar
+                              />
+
+                              <Text
+                                ellipsizeMode='tail'
+                                numberOfLines={1}
+                                style={{
+                                  color: '#D9D9D9',
+                                }}
+                              >
+                                {b.author}
+                              </Text>
+                            </View>
                           </View>
                         </View>
-                      </View>
-                    </Pressable>
-                  </View>
-                );
-              })}
+                      </TouchableOpacity>
+                    </View>
+                  )
+                }}
+              />}
           </View>
+
         </View>
-      </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }

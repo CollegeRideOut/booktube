@@ -1,7 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import {
   Dimensions,
-  Pressable,
   StyleSheet,
   Text,
   TextInput,
@@ -10,25 +9,38 @@ import {
 } from 'react-native';
 import { Link, router, useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useEffect, useState } from 'react';
-import { TRPCProvider } from '../../util/trpc';
+import { useCallback, useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { api } from '../../util/trpc';
 import { Image } from 'expo-image';
+import { SplashScreen } from "expo-router";
 
-export default function Login() {
+//SplashScreen.preventAutoHideAsync();
+
+export default function AppIndex() {
   const navigation = useRouter();
 
   useEffect(() => {
     const checkIfHasToken = async () => {
       const t = await AsyncStorage.getItem('token');
       if (t) {
-        navigation.push('/(main)/(tabs)/home');
+        navigation.push('/main/tabs/home');
+      } else {
+        setAppIsReady(true)
       }
     };
     checkIfHasToken();
   }, []);
 
+
+  const [appIsReady, setAppIsReady] = useState(false);
+  const onLayoutRootView = useCallback(async () => {
+    if (appIsReady) {
+      await SplashScreen.hideAsync();
+    }
+  }, [appIsReady]);
+
+  if (!appIsReady) { return null }
   return (
     <SafeAreaView
       style={{
@@ -37,6 +49,7 @@ export default function Login() {
         backgroundColor: '#202020',
         opacity: 1,
       }}
+      onLayout={onLayoutRootView}
     >
       <View
         style={{
@@ -92,7 +105,7 @@ export default function Login() {
             rowGap: 20,
           }}
         >
-          <Pressable
+          <TouchableOpacity
             style={{
               backgroundColor: 'white',
               width: '100%',
@@ -103,7 +116,7 @@ export default function Login() {
               justifyContent: 'center',
             }}
             onPress={() => {
-              navigation.push('/(app)/register');
+              navigation.push('//register');
             }}
           >
             <Text
@@ -116,8 +129,8 @@ export default function Login() {
             >
               Register
             </Text>
-          </Pressable>
-          <Pressable
+          </TouchableOpacity>
+          <TouchableOpacity
             style={{
               backgroundColor: '#222222',
               width: '100%',
@@ -130,7 +143,7 @@ export default function Login() {
               borderColor: '#5C5C5C',
             }}
             onPress={() => {
-              navigation.push('/(app)/login');
+              navigation.push('/login');
             }}
           >
             <Text
@@ -144,7 +157,7 @@ export default function Login() {
             >
               Sign in
             </Text>
-          </Pressable>
+          </TouchableOpacity>
         </View>
 
         <View

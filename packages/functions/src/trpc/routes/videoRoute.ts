@@ -40,7 +40,7 @@ export const videoRouter = router({
       const cursor = opts.input.cursor
         const videos = await videoRepo.randomVideos(cursor);
         videos.forEach((v) => {
-          v.path = `https://${Bucket.videoBucket.bucketName}.s3.amazonaws.com/${v.path}`;
+          v.path = `http://${process.env.VIDEO_DISTRIBUTION_DOMAIN}/${v.path}.m3u8`;
         });
 
         return videos;

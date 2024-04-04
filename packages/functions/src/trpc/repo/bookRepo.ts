@@ -20,6 +20,32 @@ export const bookrepo = {
       .innerJoin(schema.books, eq(schema.books.id, schema.generesBooks.bookId));
   },
 
+  async searchBooks(searchTerm: string) {
+    if (searchTerm !== '') {
+      return await db
+        .select({
+          id: schema.books.id,
+          name: schema.books.name,
+          author: schema.books.author,
+          rating: schema.books.rating,
+          thumbnailLong: schema.books.thumbnailLong,
+        })
+        .from(schema.books)
+        .where(like(schema.books.name, `%${searchTerm}%`))
+    } else {
+      return await db
+        .select({
+          id: schema.books.id,
+          name: schema.books.name,
+          author: schema.books.author,
+          rating: schema.books.rating,
+          thumbnailLong: schema.books.thumbnailLong,
+        })
+        .from(schema.books)
+    }
+  },
+
+
   async updateRating(id: string, rating: number) {
     await db
       .update(schema.books)

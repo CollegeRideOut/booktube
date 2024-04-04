@@ -1,6 +1,6 @@
 import { db } from '../db';
 import * as schema from '../../../../core/src/schema';
-import { and, avg, eq, isNotNull, ne, not, sql, sum } from 'drizzle-orm';
+import { and, avg, eq, isNotNull, like, ne, not, sql, sum } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 import { v4 } from 'uuid';
 
@@ -51,6 +51,24 @@ export const libraryRepo = {
           eq(schema.library.bookId, bookId),
         ),
       );
+  },
+
+  async searchLibrary(searchTerm: string, userId: string) {
+    return await db
+      .select({
+        book: {
+          id: schema.books.id,
+          name: schema.books.name,
+          thumbnailLong: schema.books.thumbnailLong,
+          author: schema.books.author,
+          rating: schema.books.rating,
+          favourite: schema.books.favourite,
+        },
+        id: schema.library.id,
+      })
+      .from(schema.library)
+      .where(eq(schema.library.userId, userId))
+      .innerJoin(schema.books, and(eq(schema.books.id, schema.library.bookId), like(schema.books.name, `%${searchTerm}%`)))
   },
 
   async getUserLibrary(userId: string) {

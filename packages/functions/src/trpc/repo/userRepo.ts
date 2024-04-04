@@ -1,6 +1,6 @@
 import { db } from '../db';
 import * as schema from '../../../../core/src/schema';
-import { sql } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 import { v4 } from 'uuid';
 
@@ -23,6 +23,19 @@ export const userRepo = {
       );
       throw error;
     }
+  },
+
+  async updateName(name: string, userId: string) {
+    await db.update(schema.users).set({ name: name }).where(eq(schema.users.id, userId))
+  },
+
+  async updateEmail(email: string, userId: string) {
+    await db.update(schema.users).set({ email: email }).where(eq(schema.users.id, userId))
+  },
+
+
+  async updatePassword(password: string, userId: string) {
+    await db.update(schema.users).set({ password: password }).where(eq(schema.users.id, userId))
   },
 
   async getUserById(id: string) {

@@ -208,13 +208,26 @@ export const bookRouter = router({
         const smiliarBooks = await bookrepo.getSimilarBooks(genres);
 
         smiliarBooks.forEach((b) => {
-          b.thumbnailLong = `https://${Bucket.bookBucket.bucketName}.s3.amazonaws.com/${b.thumbnailLong}`;
+          b.thumbnailLong = `http://${process.env.BOOK_DISTRIBUTION_DOMAIN}/${b.thumbnailLong}`;
         });
         return smiliarBooks;
       } catch (error) {
         throw error;
       }
     }),
+
+  searchBooks: clientProcedure.input(z.string()).mutation(async (opts) => {
+    try {
+      const searchTerm = opts.input
+      const books = await bookrepo.searchBooks(searchTerm)
+      books.forEach((b) => {
+        b.thumbnailLong = `http://${process.env.BOOK_DISTRIBUTION_DOMAIN}/${b.thumbnailLong}`;
+      })
+      return books
+    } catch (error) {
+      throw error
+    }
+  }),
 
   getBook: clientProcedure.input(z.string()).query(async (opts) => {
     try {
@@ -252,7 +265,7 @@ export const bookRouter = router({
       }
 
       const book = books[0];
-      book.thumbnailSquare = `https://${Bucket.bookBucket.bucketName}.s3.amazonaws.com/${book.thumbnailSquare}`;
+      book.thumbnailSquare = `http://${process.env.BOOK_DISTRIBUTION_DOMAIN}/${book.thumbnailSquare}`;
       return book;
     } catch (error) {
       throw error;
@@ -271,7 +284,7 @@ export const bookRouter = router({
 
       const reviews = await libraryRepo.getUserReviews(book.id);
 
-      book.thumbnailSquare = `https://${Bucket.bookBucket.bucketName}.s3.amazonaws.com/${book.thumbnailSquare}`;
+      book.thumbnailSquare = `http://${process.env.BOOK_DISTRIBUTION_DOMAIN}/${book.thumbnailSquare}`;
 
       const libBooks = await libraryRepo.checkIfUserOwnsBook(
         opts.ctx.user!.id,
@@ -357,7 +370,7 @@ export const bookRouter = router({
       const nameTerm = opts.input;
       const books = await bookrepo.fuzzySearchByName(nameTerm);
       books.forEach((b) => {
-        b.thumbnailLong = `https://${Bucket.bookBucket.bucketName}.s3.amazonaws.com/${b.thumbnailLong}`;
+        b.thumbnailLong = `http://${process.env.BOOK_DISTRIBUTION_DOMAIN}/${b.thumbnailLong}`;
       });
 
       return books;

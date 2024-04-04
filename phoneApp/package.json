@@ -35,7 +35,8 @@
     "react-native-star-rating-widget": "^1.7.3",
     "react-native-svg": "14.1.0",
     "react-native-web": "~0.19.6",
-    "superjson": "^2.2.1"
+    "superjson": "^2.2.1",
+    "expo-splash-screen": "~0.26.4"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

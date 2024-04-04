@@ -26,10 +26,10 @@ export const genreRoute = router({
           return gl.id === g.generes.id;
         });
         if (found) {
-          g.books.thumbnailLong = `https://${Bucket.bookBucket.bucketName}.s3.amazonaws.com/${g.books.thumbnailLong}`;
+          g.books.thumbnailLong = `http://${process.env.BOOK_DISTRIBUTION_DOMAIN}/${g.books.thumbnailLong}`;
           found.books.push(g.books);
         } else {
-          g.books.thumbnailLong = `https://${Bucket.bookBucket.bucketName}.s3.amazonaws.com/${g.books.thumbnailLong}`;
+          g.books.thumbnailLong = `http://${process.env.BOOK_DISTRIBUTION_DOMAIN}/${g.books.thumbnailLong}`;
           genresSet.push({
             id: g.generes.id,
             name: g.generes.name,
@@ -59,7 +59,7 @@ export const genreRoute = router({
       const id = opts.input;
       const books = await genreRepo.getBooksUnderGenre(id);
       books.forEach((b) => {
-        b.thumbnailLong = `https://${Bucket.bookBucket.bucketName}.s3.amazonaws.com/${b.thumbnailLong}`;
+        b.thumbnailLong = `http://${process.env.BOOK_DISTRIBUTION_DOMAIN}/${b.thumbnailLong}`;
       });
 
       return books;

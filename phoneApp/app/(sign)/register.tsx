@@ -1,7 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import {
   Dimensions,
-  Pressable,
   StyleSheet,
   Text,
   TextInput,
@@ -11,7 +10,6 @@ import {
 import { Link, router, useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
-import { TRPCProvider } from '../../util/trpc';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { api } from '../../util/trpc';
 
@@ -147,7 +145,7 @@ export default function Register() {
         </View>
 
         <View style={{ width: '100%', rowGap: 10 }}>
-          <Pressable
+          <TouchableOpacity
             style={{
               backgroundColor: 'white',
               width: '100%',
@@ -167,10 +165,10 @@ export default function Register() {
             >
               Register
             </Text>
-          </Pressable>
+          </TouchableOpacity>
         </View>
 
-        <Pressable
+        <TouchableOpacity
           style={{
             width: '100%',
             alignItems: 'center',
@@ -194,7 +192,7 @@ export default function Register() {
               Sign In
             </Text>
           </Text>
-        </Pressable>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );

@@ -1,23 +1,57 @@
 import {
   Dimensions,
-  Pressable,
+  TouchableOpacity,
   Text,
   View,
   ScrollView,
   FlatList,
 } from 'react-native';
+import { useCallback, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { api } from '../../../../util/trpc';
 import { useEffect } from 'react';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { StarRatingDisplay } from 'react-native-star-rating-widget';
+import { SplashScreen } from 'expo-router';
+
+
+//SplashScreen.preventAutoHideAsync()
 
 export default function IndexHome() {
   const navigation = useRouter();
   const gLoLoBo = api.genre.getGLoLoBo.useQuery();
   const featuredBook = api.book.getFeaturedBook.useQuery();
 
+  const [appIsReady, setAppIsReady] = useState(false);
+
+  const onLayoutRootView = useCallback(async () => {
+
+    if (appIsReady) {
+
+      await SplashScreen.hideAsync();
+
+    }
+  }, [appIsReady]);
+
+  useEffect(() => {
+    async function prepare() {
+      try {
+
+        if (!featuredBook.isLoading && !gLoLoBo.isLoading) {
+          setAppIsReady(true)
+        }
+      } catch (e) {
+        console.warn(e);
+      } finally {
+        // Tell the application to render
+        setAppIsReady(true);
+      }
+    }
+
+    prepare();
+  }, [gLoLoBo.isLoading, featuredBook.isLoading]);
+  if (!appIsReady) { return null }
 
   return (
     <SafeAreaView
@@ -26,52 +60,65 @@ export default function IndexHome() {
         width: Dimensions.get('window').width,
         flex: 1,
       }}
+      onLayout={onLayoutRootView}
     >
       <ScrollView
         style={{
+          width: Dimensions.get('window').width,
           backgroundColor: '#202020',
           display: 'flex',
           flexDirection: 'column',
           flex: 1,
-          rowGap: 20,
         }}
       >
         <View
           style={{
             display: 'flex',
-            rowGap: 20,
+            rowGap: 30,
             width: '100%',
             flexDirection: 'column',
+            padding: '5%',
             flex: 1,
           }}
         >
           {/* header */}
-          <View style={{ flexDirection: 'row', columnGap: 30 }}>
+          <View style={{
+            flexDirection: 'row',
+            height: 24,
+            width: '100%',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}>
             <Image
               source={require('../../../../assets/logo.png')}
               style={{
-                width: 36,
-                height: 36,
+                width: 24,
+                height: 24,
+
               }}
             />
 
-            <Image
-              source={require('../../../../assets/search.png')}
-              style={{
-                width: 19,
-                height: 19,
-              }}
-            />
+            <TouchableOpacity onPress={() => {
+              navigation.push('/main/tabs/home/search/')
+            }}>
+              <Image
+                source={require('../../../../assets/search.png')}
+                style={{
+                  width: 23,
+                  height: 24,
+                }}
+              />
+            </TouchableOpacity>
           </View>
 
           {/* main body */}
-          <View style={{ paddingLeft: '3%', paddingRight: '3%', rowGap: 30 }}>
+          <View style={{ rowGap: 30 }}>
             {featuredBook.data && (
-              <Pressable
+              <TouchableOpacity
                 key={featuredBook.data.id}
                 onPress={() => {
                   navigation.push({
-                    pathname: '/(tabs)/home/[book]',
+                    pathname: '/main/tabs/home/[book]',
                     params: { book: featuredBook.data.id },
                   });
                 }}
@@ -107,10 +154,10 @@ export default function IndexHome() {
                     By {featuredBook.data.author}
                   </Text>
                 </View>
-              </Pressable>
+              </TouchableOpacity>
             )}
 
-            <View style={{ width: '100%' }}>
+            <View style={{ width: '100%', }}>
               {gLoLoBo.data &&
                 gLoLoBo.data.map((g) => {
                   return (
@@ -140,13 +187,13 @@ export default function IndexHome() {
                                   marginTop: 10,
                                 }}
                               >
-                                <Pressable
+                                <TouchableOpacity
                                   style={{}}
                                   key={b.id}
                                   onPress={() => {
                                     navigation.push({
-                                      pathname: '/(tabs)/home/[book]',
-                                      params: { book: b.id },
+                                      pathname: '/main/tabs/home/[book]',
+                                      params: { book: b.id, routeName: 'home' },
                                     });
                                   }}
                                 >
@@ -212,7 +259,7 @@ export default function IndexHome() {
                                       </View>
                                     </View>
                                   </View>
-                                </Pressable>
+                                </TouchableOpacity>
                               </View>
                             );
                           }}

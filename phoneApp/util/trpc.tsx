@@ -12,7 +12,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
  * A set of typesafe hooks for consuming your API.
  */
 
-export const context = React.createContext<QueryClient | undefined>(undefined);
+export const context = React.createContext<QueryClient>(new QueryClient());
 export const api = createTRPCReact<AppRouter>({ context: context });
 
 export function TRPCProvider(props: { children: React.ReactNode }) {

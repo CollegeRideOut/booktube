@@ -1,22 +1,18 @@
 import {
   Alert,
   ScrollView,
-  Pressable,
+  TouchableOpacity,
   Text,
   View,
   Dimensions,
-  FlatList,
   TextInput,
 } from 'react-native';
-import { StarRatingDisplay } from 'react-native-star-rating-widget';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { api } from '../../../../util/trpc';
-import { useEffect, useState } from 'react';
+import { api } from '../../../../../util/trpc';
+import { useState } from 'react';
 import { Image } from 'expo-image';
 import { useGlobalSearchParams, useRouter } from 'expo-router';
 
 import StartRating from 'react-native-star-rating-widget';
-import { useStripe } from '@stripe/stripe-react-native';
 
 export default function CreateReview() {
   const { librayId, bookId, name, author, thumbnailSquare } =
@@ -176,7 +172,7 @@ export default function CreateReview() {
               borderRadius: 7,
             }}
           />
-          <Pressable
+          <TouchableOpacity
             onPress={async () => {
               try {
                 const val = await submitReview.mutateAsync({
@@ -199,7 +195,7 @@ export default function CreateReview() {
             >
               Submit
             </Text>
-          </Pressable>
+          </TouchableOpacity>
         </View>
       </View>
     </ScrollView>

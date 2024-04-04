@@ -1,6 +1,6 @@
 import {
   Dimensions,
-  Pressable,
+  TouchableOpacity,
   ScrollView,
   Text,
   TextInput,
@@ -19,8 +19,6 @@ export default function DiscoverIndex() {
   const [searchTerm, setSearchTerm] = useState('');
   const searchBarRef = useRef<any>();
 
-
-  console.log('in book we got');
   return (
     <SafeAreaView
       style={{
@@ -41,72 +39,57 @@ export default function DiscoverIndex() {
         <View
           style={{
             display: 'flex',
-            rowGap: 20,
+            rowGap: 30,
             width: '100%',
             flexDirection: 'column',
             flex: 1,
-
             padding: '5%',
           }}
         >
           {/* header */}
 
-          <View
-            style={{
-              width: '100%',
-            }}
-          >
-            <View
+          <View style={{ flexDirection: 'row', height: 24, width: '100%', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Text
               style={{
-                width: '100%',
-                backgroundColor: '#303030',
-                height: 45,
-                borderRadius: 5,
-                flexDirection: 'row',
-                justifyContent: 'space-evenly',
-
-                alignItems: 'center',
+                fontSize: 24,
+                lineHeight: 24,
+                color: 'white',
+                fontFamily: 'Inter-600',
               }}
             >
-              <TextInput
-                ref={searchBarRef}
+              Discover
+            </Text>
+
+            <TouchableOpacity onPress={() => {
+              navigation.push('/main/tabs/discover/search/')
+            }}>
+              <Image
+                source={require('../../../../assets/search.png')}
                 style={{
-                  color: 'white',
-                  width: '100%',
-                  paddingLeft: '5%',
-                  backgroundColor: '#303030',
-                  borderRadius: 5,
-                  fontWeight: 'bold',
-                  height: 45,
-                  fontFamily: 'Inter-Bold',
-                }}
-                placeholderTextColor='white'
-                placeholder='DISCOVER'
-                value={searchTerm}
-                onChangeText={(t) => {
-                  setSearchTerm(t);
+                  width: 23,
+                  height: 24,
                 }}
               />
-            </View>
+            </TouchableOpacity>
           </View>
 
           <View
             style={{
-              rowGap: 20,
               flexDirection: 'row',
               flexWrap: 'wrap',
-              columnGap: 20,
+              justifyContent: 'space-between',
+              rowGap: (Dimensions.get('window').width * 0.9) - (155 * 2)
             }}
           >
             {genres.data &&
               genres.data.map((g) => {
                 return (
-                  <Pressable
+                  <TouchableOpacity
                     key={g.id}
                     style={{ width: 155, height: 87 }}
                     onPress={() => {
                       navigation.push({
-                        pathname: '/(main)/(tabs)/discover/[genreId]',
+                        pathname: '/main/tabs/discover/[genreId]',
                         params: { genreId: g.id, genreName: g.name },
                       });
                     }}
@@ -134,7 +117,7 @@ export default function DiscoverIndex() {
                         {g.name}
                       </Text>
                     </ImageBackground>
-                  </Pressable>
+                  </TouchableOpacity>
                 );
               })}
           </View>
