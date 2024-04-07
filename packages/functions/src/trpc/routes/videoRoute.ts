@@ -39,8 +39,9 @@ export const videoRouter = router({
       try {
       const cursor = opts.input.cursor
         const videos = await videoRepo.randomVideos(cursor);
+
         videos.forEach((v) => {
-          v.path = `http://${process.env.VIDEO_DISTRIBUTION_DOMAIN}/${v.path}.m3u8`;
+          v.path = `http://${process.env.VIDEO_DISTRIBUTION_DOMAIN}/${v.path}`;
         });
 
         return videos;

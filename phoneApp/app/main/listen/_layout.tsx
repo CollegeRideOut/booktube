@@ -23,8 +23,6 @@ export default function ListenLayout() {
     authorizationState.WAITING,
   );
 
-
-
   useEffect(() => {
     if (authorized !== authorizationState.WAITING) {
 

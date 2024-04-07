@@ -26,6 +26,223 @@ import { Video, Audio, ResizeMode } from 'expo-av';
 import { Arrow, ArrowDirection } from './Arrow';
 import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 
+
+
+
+class Track {
+  _audioFile: string
+  _fadeTimeout: any
+  _loopHandlerWorking: any
+  status: {
+    loaded: boolean,
+    pauseTime: number,
+    volume: number
+  }
+  soundObj: Audio.SoundObject
+  currentLine: any
+  currentSubs: any
+
+  constructor(audioFile: string, soundObj: Audio.SoundObject) {
+    this._audioFile = audioFile
+    this._fadeTimeout = null
+    this._loopHandlerWorking
+    this.soundObj = soundObj
+    this.status = {
+      loaded: true,
+      pauseTime: 0,
+      volume: 1
+    }
+
+  }
+
+  load = (audioFile: string) => new Promise(async (resolve, reject) => {
+    const { soundObj, _audioFile, status } = this
+
+    try {
+
+      console.log('hello asdfasdfasdflajdshf YOOOOO')
+      await soundObj?.sound.loadAsync({ uri: audioFile })
+      await soundObj?.sound.setProgressUpdateIntervalAsync(100)
+
+
+      console.log('hello asdfasdfasdflajdshf YOOOOO222')
+
+
+      status.loaded = true
+      resolve(true)
+    } catch (error) {
+      reject(error)
+    }
+  })
+
+  unload = () => new Promise(async (resolve, reject) => {
+    const { soundObj, status } = this
+
+    try {
+      status.loaded = false
+      await soundObj?.sound.unloadAsync()
+      resolve(true)
+    } catch (error) {
+      reject(error)
+    }
+  })
+
+  setVolume = (volume: number) => new Promise(async (resolve, reject) => {
+    const { soundObj, status } = this
+
+    if (!status.loaded) return resolve(true)
+
+    try {
+      await soundObj?.sound.setVolumeAsync(volume)
+      status.volume = volume
+      resolve(true)
+    } catch (error) {
+      reject(error)
+    }
+  })
+
+  setCurrentTime = (time: number) => new Promise(async (resolve, reject) => {
+    const { soundObj, status } = this
+
+    if (!status.loaded) return resolve(true)
+
+    try {
+      await soundObj?.sound.setStatusAsync({ positionMillis: time })
+      resolve(true)
+    } catch (error) {
+      reject(error)
+    }
+  })
+
+  play = ({
+    loop = true,
+    continueFromPreviousPosition = true,
+    volume = 1
+  }) => new Promise(async (resolve, reject) => {
+    const { soundObj, setCurrentTime, _audioFile, setVolume, fade, setTrackToLooping, load, status } = this
+
+    try {
+      if (!status.loaded) {
+        await load(_audioFile)
+      }
+
+      const shouldFadeIn = continueFromPreviousPosition && status.pauseTime !== 0 ? true : false
+      await setCurrentTime(continueFromPreviousPosition ? status.pauseTime : 0)
+      await setVolume(shouldFadeIn ? 0 : volume)
+
+      await soundObj?.sound.playAsync()
+
+      if (shouldFadeIn) {
+        await fade(volume)
+      }
+
+      if (loop) {
+        await setTrackToLooping()
+      }
+
+      resolve(true)
+    } catch (error) {
+      reject(error)
+    }
+  })
+
+  pause = () => new Promise(async (resolve, reject) => {
+    const { soundObj, status, fade, unload } = this
+
+    if (!status.loaded) return resolve(true)
+
+    try {
+      const { positionMillis } = await soundObj?.sound.getStatusAsync() as any
+      status.pauseTime = positionMillis ? positionMillis : 0
+      await fade(0)
+      await unload()
+      resolve(true)
+    } catch (error) {
+      reject(error)
+    }
+  })
+
+  stop = () => new Promise(async (resolve, reject) => {
+    const { fade, unload, status, soundObj } = this
+
+    if (!status.loaded) return resolve(true)
+
+    try {
+      const { isPlaying } = await soundObj?.sound.getStatusAsync() as any
+
+      if (isPlaying) {
+        await fade(0)
+      }
+
+      await unload()
+      resolve(true)
+    } catch (error) {
+      reject(error)
+    }
+  })
+
+  fade = (toVolume: number) => new Promise((resolve, reject) => {
+    const { status, _fadeTimeout, setVolume } = this
+
+    if (status.volume === toVolume) return
+
+    if (_fadeTimeout) {
+      clearTimeout(_fadeTimeout)
+    }
+
+    const start = Math.floor(status.volume * 10)
+    const end = toVolume * 10
+    let currVolume = start
+
+    const loop = async () => {
+      if (currVolume !== end) {
+        start < end ? currVolume++ : currVolume--
+        await setVolume(currVolume / 10)
+        this._fadeTimeout = setTimeout(loop, 150)
+      } else {
+        clearTimeout(_fadeTimeout)
+        this._fadeTimeout = null
+        resolve(true)
+      }
+    }
+
+    this._fadeTimeout = setTimeout(loop, 5)
+  })
+
+  setTrackToLooping = () => new Promise(async (resolve, reject) => {
+    try {
+      this._loopHandlerWorking = false
+      resolve(true)
+    } catch (error) {
+      reject(error)
+    }
+  })
+
+  _loopHandler = async (status: any) => {
+    const { isLoaded, isPlaying, durationMillis, positionMillis, volume } = status
+
+    if (
+      !this._loopHandlerWorking &&
+      isPlaying &&
+      isLoaded &&
+      (durationMillis - positionMillis) < 1500
+    ) {
+      try {
+        this._loopHandlerWorking = true
+        await this.stop()
+        await this.play({ volume, loop: true })
+      } catch (error) {
+        console.log(error)
+      } finally {
+        this._loopHandlerWorking = false
+      }
+    }
+  }
+}
+
+
+
+
 export default function ListenToBook() {
   const { libraryId } = useGlobalSearchParams();
   const navigation = useRouter();
@@ -38,7 +255,7 @@ export default function ListenToBook() {
   const loVs = api.video.getLoVi.useQuery({ cursor: 5 });
 
   const [isPlaying, setIsPlaying] = useState(true);
-  const [audioStream, setAudioStream] = useState<Audio.SoundObject>();
+  const [audioStream, setAudioStream] = useState<Track>();
   const [currentLine, setCurrentLine] = useState<any>({});
   const [currentIdxLoVs, setCurrentIdxLoVs] = useState(-1);
   const [allLovs, setAllVs] = useState<
@@ -75,6 +292,18 @@ export default function ListenToBook() {
   }>();
   const [updateInterval, setUpdateInterval] = useState<NodeJS.Timeout>();
 
+  useEffect(() => {
+
+    console.log('test1', audioStream)
+    if (audioStream) {
+      console.log('test2')
+      if (audioStream.soundObj) {
+        console.log('test3')
+        audioStream.soundObj.sound._onPlaybackStatusUpdate = (a) => { statusUpdate(a) }
+      }
+    }
+  }, [audioStream])
+
   /* const updatePositionnMutate = async (soundObj: Audio.SoundObject) => { */
   /*   try { */
   /*     const status = await soundObj.sound.getStatusAsync(); */
@@ -91,22 +320,47 @@ export default function ListenToBook() {
   /*   } */
   /* }; */
 
+
+  const statusUpdate = (status: any) => {
+    const t = (status as any).positionMillis;
+
+    if (status.didJustFinish) {
+      const currentNumber = currentInfo!.chapter.number;
+      if (currentNumber < initialInfo.data!.chapters.length) {
+        const nextChapter = initialInfo.data!.chapters.find(
+          (c) => c.number === currentNumber + 1,
+        );
+        if (nextChapter) {
+          updateCurrentInfo(nextChapter.id);
+          return;
+        }
+      }
+      if (updateInterval) {
+        clearInterval(updateInterval);
+      }
+    }
+
+
+    if (currentLine.start < t || currentLine.end > t) {
+      let val = currentSubs.find((ee: any) => {
+        return t >= ee.start && t <= ee.end;
+      });
+
+      if (val) {
+        setCurrentLine(val);
+      }
+    }
+  }
+
   async function updateCurrentInfo(id: string) {
     try {
-      console.log('when did i ran ');
-
-      if (audioStream) {
-        await audioStream!.sound.unloadAsync();
-      }
-
+      if (audioStream) { audioStream.unload() }
       const newInfo = await chapterByIdMutation.mutateAsync({
         id: id,
       });
-      console.log('hello???', newInfo);
 
       setCurrentInfo(newInfo);
     } catch (error) {
-      console.log('some errir', error);
     }
   }
 
@@ -120,12 +374,10 @@ export default function ListenToBook() {
   }, [initialInfo.data]);
 
   useEffect(() => {
-    let soundObj: Audio.SoundObject;
+    let track: Track;
 
-    console.log('i should run again 1');
     const getData = async () => {
       if (currentInfo) {
-        console.log('i should run again 22222');
         /* const audio = initialInfo.data.currentInfo.audiobook; */
         const audio = currentInfo.audiobooks[0];
         const subs = await (
@@ -136,44 +388,49 @@ export default function ListenToBook() {
 
         setCurrentSubs(subs.events);
         setCurrentLine(subs.events[0]);
-        soundObj = await Audio.Sound.createAsync(
-          { uri: audio.path },
+
+
+        const s = await Audio.Sound.createAsync({ uri: audio.path },
           {
             shouldPlay: true,
             progressUpdateIntervalMillis: 200,
-            volume: 1,
-            rate: 1,
             /* positionMillis: */
             /*   initialInfo.data.currentInfo.chapterId.lastSecondListend, */
             positionMillis: 0,
           },
-        );
+        )
+
+        track = new Track(audio.path, s)
+
+        await track.play({ continueFromPreviousPosition: true })
+
+        setAudioStream(track)
+
         /**/
         /* let inteval = setInterval(() => { */
         /*   updatePositionnMutate(soundObj); */
         /* }, 5000); */
         /* setUpdateInterval(inteval); */
-        setAudioStream(soundObj);
       }
     };
 
-    console.log('false');
     if (currentInfo) {
-      console.log('true');
       getData();
     }
-
-    console.log('false222', currentInfo);
-
     return () => {
-      if (soundObj) {
-        soundObj.sound.unloadAsync();
+      if (track) {
+        track.unload();
       }
       if (updateInterval) {
         clearInterval(updateInterval);
       }
     };
+
+
   }, [currentInfo]);
+
+
+
 
   useEffect(() => {
     if (loVs.data) {
@@ -189,53 +446,7 @@ export default function ListenToBook() {
     }
   }, [allLovs]);
 
-  useEffect(() => {
-    if (audioStream && video.current) {
-      audioStream.sound._onPlaybackStatusUpdate = (status: any) => {
-        const t = (status as any).positionMillis;
 
-        if (!(status as any).isPlaying) {
-        }
-
-        if (status.didJustFinish) {
-          console.log('ended');
-          console.log('here');
-
-          const currentNumber = currentInfo!.chapter.number;
-
-          if (currentNumber < initialInfo.data!.chapters.length) {
-            const nextChapter = initialInfo.data!.chapters.find(
-              (c) => c.number === currentNumber + 1,
-            );
-
-            console.log('current', currentNumber);
-            console.log('next', nextChapter);
-            if (nextChapter) {
-              updateCurrentInfo(nextChapter.id);
-              return;
-            }
-          }
-          if (updateInterval) {
-            clearInterval(updateInterval);
-          }
-        }
-
-        if (currentLine && currentSubs) {
-          if (currentLine.start < t || currentLine.end > t) {
-            let val = currentSubs.find((ee: any) => {
-              return t >= ee.start && t <= ee.end;
-            });
-
-            if (val) {
-              setCurrentLine(val);
-            }
-          }
-        }
-      };
-    }
-  }, [audioStream, video.current]);
-
-  const headerHeight = 100;
   const PAGE_WIDTH = Dimensions.get('window').width;
   const PAGE_HEIGHT = Dimensions.get('window').height;
   const directionAnim = useSharedValue<ArrowDirection>(
@@ -243,24 +454,6 @@ export default function ListenToBook() {
   );
   const [isVertical, setIsVertical] = React.useState(true);
 
-  const animationStyle: TAnimationStyle = React.useCallback(
-    (value: number) => {
-      'worklet';
-      const translateY = interpolate(value, [-1, 0, 1], [-PAGE_HEIGHT, 0, 0]);
-
-      const translateX = interpolate(value, [-1, 0, 1], [-PAGE_WIDTH, 0, 0]);
-
-      const zIndex = interpolate(value, [-1, 0, 1], [300, 0, -300]);
-
-      const scale = interpolate(value, [-1, 0, 1], [1, 1, 0.85]);
-
-      return {
-        transform: [isVertical ? { translateY } : { translateX }, { scale }],
-        zIndex,
-      };
-    },
-    [PAGE_HEIGHT, PAGE_WIDTH, isVertical],
-  );
 
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
 
@@ -395,10 +588,16 @@ export default function ListenToBook() {
           <TouchableOpacity
             onPress={async () => {
               if (isPlaying) {
-                await audioStream.sound.pauseAsync();
+                await audioStream.pause();
                 setIsPlaying(false);
               } else {
-                await audioStream.sound.playAsync();
+                await audioStream.play(
+                  {
+                    loop: true,
+                    continueFromPreviousPosition: true,
+                    volume: 1
+                  }
+                );
 
                 setIsPlaying(true);
               }

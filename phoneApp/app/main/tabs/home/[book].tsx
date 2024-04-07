@@ -23,14 +23,11 @@ export default function BookInfo() {
   const bookInfo = api.book.getBookInfo.useQuery(book as string, { enabled: false });
   const similarBooks = api.book.getSimilarBooks.useQuery(book as string, { enabled: false });
 
-
   useEffect(() => {
     bookInfo.refetch()
     similarBooks.refetch()
     console.log('i ran ')
   }, [])
-
-
 
 
   const generatePaymentIntent = api.book.generatePaymentIntent.useMutation();
@@ -184,7 +181,7 @@ export default function BookInfo() {
                     onPress={() => {
                       console.log('i got pressed');
                       navigation.push({
-                        pathname: '/listen/[libraryId]',
+                        pathname: '/main/listen/[libraryId]',
                         params: { libraryId: bookInfo.data.librayId },
                       });
                     }}
