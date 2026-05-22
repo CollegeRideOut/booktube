@@ -1,6 +1,8 @@
 # narrativo
+
 An audiobook platform with synchronized text — think Audible meets Spotify lyrics. Browse, play, and follow along with narrated content word-by-word.
 Built from the ground up: mobile app (Expo/React Native), web frontend (Astro), and serverless API (SST on AWS).
+
 ---
 ## Architecture
 ```
